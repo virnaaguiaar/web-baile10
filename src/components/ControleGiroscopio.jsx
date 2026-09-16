@@ -3,7 +3,7 @@ import useMQTT from '../hooks/useMQTT';
 import RobotPicker   from './RobotPicker';
 import RobotFloorMap from './RobotFloorMap';
 
-function ControleGiroscopio({ robotsPose = {}, robotId = 'robo1', onRobotIdChange = () => {} }) {
+function ControleGiroscopio({ robotsPose = {}, id_robo = 'robo1', onRobotIdChange = () => {} }) {
     const brokerUrl = process.env.REACT_APP_MQTT_BROKER
         || 'wss://bfea296c.ala.us-east-1.emqxsl.com:8084/mqtt';
 
@@ -18,13 +18,13 @@ function ControleGiroscopio({ robotsPose = {}, robotId = 'robo1', onRobotIdChang
     const lastCommandRef = useRef('');
 
     // Círculo verde: pose do robô selecionado chegou nos últimos 3s
-    const poseDoRobo = robotsPose[robotId];
+    const poseDoRobo = robotsPose[id_robo];
     const isRobotConnected = poseDoRobo
         && (Date.now() - (poseDoRobo.lastUpdate || 0)) < 3000;
 
     // Publica sempre em "cmd" (broadcast) para funcionar com firmware atual
     const publicar = useCallback((comando) => {
-        sendCommand(comando, 'cmd');
+        sendCommand(comando, 'cmd/${id_robo}');
     }, [sendCommand]);
 
     const mapAngleToSpeed = (angle, center, sens) => {
@@ -93,7 +93,7 @@ function ControleGiroscopio({ robotsPose = {}, robotId = 'robo1', onRobotIdChang
             </section>
 
             <div className={`text-sm mb-2 font-bold ${isRobotConnected ? 'text-green-600' : 'text-red-600'}`}>
-                {isRobotConnected ? `✅ ${robotId} conectado` : `❌ ${robotId} desconectado`}
+                {isRobotConnected ? `✅ ${id_robo} conectado` : `❌ ${id_robo} desconectado`}
             </div>
 
             <div className={`text-sm mb-4 ${isConnected ? 'text-green-500' : 'text-red-500'}`}>
@@ -106,7 +106,7 @@ function ControleGiroscopio({ robotsPose = {}, robotId = 'robo1', onRobotIdChang
                 </div>
             )}
 
-            <RobotPicker robotId={robotId} onRobotIdChange={onRobotIdChange} robotsPose={robotsPose} />
+            <RobotPicker id_robo={id_robo} onRobotIdChange={onRobotIdChange} robotsPose={robotsPose} />
 
             {!gyroActive ? (
                 <button
@@ -177,7 +177,7 @@ function ControleGiroscopio({ robotsPose = {}, robotId = 'robo1', onRobotIdChang
             <RobotFloorMap
                 robotsPose={robotsPose}
                 mqttOnline={isConnected}
-                selectedRobotId={robotId}
+                selectedRobotId={id_robo}
                 title="Onde estão os robôs"
             />
         </div>

@@ -38,7 +38,7 @@ function App() {
                         <main className="flex justify-center items-center flex-col py-12 px-6 mt-6 w-full bg-white/95 backdrop-blur-sm border-2 border-amber-200/50 max-w-[1100px] rounded-3xl shadow-2xl shadow-amber-500/10">
                             <Controle 
                                 robotsPose={robotsPose}
-                                robotId={userRobotId}
+                                id_robo={userRobotId}
                                 onRobotIdChange={(id) => { 
                                     setUserRobotId(id); 
                                     localStorage.setItem('digitalTwinRobotId', id); 
@@ -60,7 +60,7 @@ function App() {
                     <div className="page-container animate-fadeIn">
                         <ControleGiroscopio 
                             robotsPose={robotsPose}
-                            robotId={userRobotId}
+                            id_robo={userRobotId}
                             onRobotIdChange={(id) => { 
                                 setUserRobotId(id); 
                                 localStorage.setItem('digitalTwinRobotId', id); 
@@ -77,7 +77,7 @@ function App() {
             case 'twin':
                 return (
                     <div className="page-container animate-fadeIn">
-                        <DigitalTwin robotsPose={robotsPose} mqttOnline={isConnected} robotId={userRobotId} onRobotIdChange={(id) => { setUserRobotId(id); localStorage.setItem('digitalTwinRobotId', id); }} />
+                        <DigitalTwin robotsPose={robotsPose} mqttOnline={isConnected} id_robo={userRobotId} onRobotIdChange={(id) => { setUserRobotId(id); localStorage.setItem('digitalTwinRobotId', id); }} />
                     </div>
                 );
             case 'sobre':

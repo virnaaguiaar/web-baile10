@@ -30,9 +30,9 @@ export function useMQTT(
   // ── Watchdog filtrado pelo robô selecionado ────────────────────────────────
   // isRobotConnected só fica verde se a pose do robô SELECIONADO chegar.
   // Se nenhum robô específico for observado, qualquer pose serve.
-  const resetWatchdog = useCallback((robotId) => {
+  const resetWatchdog = useCallback((id_robo) => {
     const watched = watchedRobotIdRef.current;
-    if (watched && robotId !== watched) return;
+    if (watched && id_robo !== watched) return;
 
     setIsRobotConnected(true);
     if (watchdogTimerRef.current) clearTimeout(watchdogTimerRef.current);
@@ -82,15 +82,15 @@ export function useMQTT(
       } else if (topic === 'robo/status') {
         console.log('📢 Status:', msg);
       } else if (topic.startsWith('robo/pose/')) {
-        const robotId = topic.split('/')[2];
-        resetWatchdog(robotId);
+        const id_robo = topic.split('/')[2];
+        resetWatchdog(id_robo);
         try {
           const data = JSON.parse(msg);
           setRobotsPose(prev => ({
             ...prev,
-            [robotId]: { ...data, lastUpdate: Date.now() },
+            [id_robo]: { ...data, lastUpdate: Date.now() },
           }));
-          console.log(`📍 Pose [${robotId}]: x=${data.x?.toFixed(2)} y=${data.y?.toFixed(2)}`);
+          console.log(`📍 Pose [${id_robo}]: x=${data.x?.toFixed(2)} y=${data.y?.toFixed(2)}`);
         } catch (e) { console.error('Erro ao parsear pose:', e); }
       }
     });
@@ -120,12 +120,12 @@ export function useMQTT(
   const mover     = useCallback((x, y) => sendCommand(_buildMoveCmd(x, y), 'cmd'), [sendCommand]);
   const parar     = useCallback(()      => sendCommand('DN0CPA', 'cmd'),            [sendCommand]);
 
-  const moverRobo = useCallback((robotId, x, y) => {
-    sendCommand(_buildMoveCmd(x, y), robotId === 'all' ? 'cmd' : `cmd/${robotId}`);
+  const moverRobo = useCallback((id_robo, x, y) => {
+    sendCommand(_buildMoveCmd(x, y), id_robo === 'all' ? 'cmd' : `cmd/${id_robo}`);
   }, [sendCommand]);
 
-  const pararRobo = useCallback((robotId) => {
-    sendCommand('DN0CPA', robotId === 'all' ? 'cmd' : `cmd/${robotId}`);
+  const pararRobo = useCallback((id_robo) => {
+    sendCommand('DN0CPA', id_robo === 'all' ? 'cmd' : `cmd/${id_robo}`);
   }, [sendCommand]);
 
   const ligarLed           = useCallback((n)  => { if (n >= 0 && n <= 7) sendCommand(`DN0CL${n}`); },  [sendCommand]);

@@ -5,13 +5,13 @@ import React, { useCallback } from 'react';
  *
  * Props
  * ─────
- * robotId          string   — ID atual, ex. "robo1" ou "all" (todos)
+ * id_robo          string   — ID atual, ex. "robo1" ou "all" (todos)
  * onRobotIdChange  fn       — chamada com o novo ID ao clicar
  * maxRobos         number   — quantos botões de robô individual gerar (default 5)
  * robotsPose       object   — mapa { robo1: {...}, robo2: {...} } para indicar quem está online
  */
 export default function RobotPicker({
-  robotId          = 'robo1',
+  id_robo          = 'robo1',
   onRobotIdChange  = () => {},
   maxRobos         = 5,
   robotsPose       = {},
@@ -20,7 +20,7 @@ export default function RobotPicker({
     onRobotIdChange(id);
   }, [onRobotIdChange]);
 
-  const isAll = robotId === 'all';
+  const isAll = id_robo === 'all';
 
   return (
     <div className="w-full max-w-xs mx-auto mt-3 mb-1 px-2 sm:px-0 select-none">
@@ -28,7 +28,7 @@ export default function RobotPicker({
       <div className="flex justify-between items-center text-xs sm:text-sm font-bold text-amber-900 mb-2">
         <span>🤖 Robô selecionado</span>
         <span className="text-pink-600 text-sm sm:text-base font-extrabold">
-          {isAll ? 'Todos' : robotId}
+          {isAll ? 'Todos' : id_robo}
         </span>
       </div>
 
@@ -38,7 +38,7 @@ export default function RobotPicker({
           const n      = i + 1;
           const id     = `robo${n}`;
           const online = Boolean(robotsPose[id]);
-          const active = robotId === id;
+          const active = id_robo === id;
 
           return (
             <button

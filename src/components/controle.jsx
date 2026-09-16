@@ -7,7 +7,7 @@ import Baixo    from '../assets/seta_down.png';
 import RobotPicker   from './RobotPicker';
 import RobotFloorMap from './RobotFloorMap';
 
-function Controle({ robotsPose = {}, robotId = 'robo1', onRobotIdChange = () => {} }) {
+function Controle({ robotsPose = {}, id_robo = 'robo1', onRobotIdChange = () => {} }) {
     const brokerUrl = process.env.REACT_APP_MQTT_BROKER
         || 'wss://bfea296c.ala.us-east-1.emqxsl.com:8084/mqtt';
 
@@ -16,16 +16,16 @@ function Controle({ robotsPose = {}, robotId = 'robo1', onRobotIdChange = () => 
     const [robotLigado, setRobotLigado] = useState(true);
 
     // Círculo verde: true se a pose do robô selecionado chegou nos últimos 3s
-    const poseDoRobo = robotsPose[robotId];
+    const poseDoRobo = robotsPose[id_robo];
     const isRobotConnected = poseDoRobo
         && (Date.now() - (poseDoRobo.lastUpdate || 0)) < 3000;
 
     // ── Publica comando de movimento ──────────────────────────────────────────
     // Publica SEMPRE em "cmd" (broadcast), porque é o único tópico que o
     // firmware atual assina. Quando o firmware novo for gravado com
-    // cmd/<id_robo>, trocar para `cmd/${robotId}`.
+    // cmd/<id_robo>, trocar para `cmd/${id_robo}`.
     const publicar = useCallback((comando) => {
-        sendCommand(comando, 'cmd');
+        sendCommand(comando, 'cmd/${id_robo}');
     }, [sendCommand]);
 
     // ── Interruptor ON/OFF ────────────────────────────────────────────────────
@@ -59,8 +59,8 @@ function Controle({ robotsPose = {}, robotId = 'robo1', onRobotIdChange = () => 
             {/* Status do robô selecionado */}
             <div className={`text-sm mb-1 font-bold ${isRobotConnected ? 'text-green-600' : 'text-red-600'}`}>
                 {isRobotConnected
-                    ? `✅ ${robotId} conectado`
-                    : `❌ ${robotId} desconectado`}
+                    ? `✅ ${id_robo} conectado`
+                    : `❌ ${id_robo} desconectado`}
             </div>
 
             {!isConnected && (
@@ -73,7 +73,7 @@ function Controle({ robotsPose = {}, robotId = 'robo1', onRobotIdChange = () => 
                 Controle Manual
             </section>
 
-            <RobotPicker robotId={robotId} onRobotIdChange={onRobotIdChange} robotsPose={robotsPose} />
+            <RobotPicker id_robo={id_robo} onRobotIdChange={onRobotIdChange} robotsPose={robotsPose} />
 
             {/* ── Interruptor ON/OFF ──────────────────────────────────────── */}
             <div className="mt-5 flex flex-col items-center gap-2">
@@ -169,7 +169,7 @@ function Controle({ robotsPose = {}, robotId = 'robo1', onRobotIdChange = () => 
             <RobotFloorMap
                 robotsPose={robotsPose}
                 mqttOnline={isConnected}
-                selectedRobotId={robotId}
+                selectedRobotId={id_robo}
                 title="Onde estão os robôs"
             />
         </div>

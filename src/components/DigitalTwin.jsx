@@ -6,17 +6,17 @@ function formatNumber(value, suffix = '') {
   return Number.isFinite(Number(value)) ? `${Number(value).toFixed(2)}${suffix}` : '—';
 }
 
-export default function DigitalTwin({ robotsPose = {}, mqttOnline, robotId, onRobotIdChange }) {
-  const [draftId, setDraftId] = useState(robotId);
+export default function DigitalTwin({ robotsPose = {}, mqttOnline, id_robo, onRobotIdChange }) {
+  const [draftId, setDraftId] = useState(id_robo);
   const availableRobots = useMemo(
     () => [...new Set([...BASE_ROBOT_IDS, ...Object.keys(robotsPose)])],
     [robotsPose],
   );
-  const pose = robotsPose[robotId];
-  const appearance = getRobotAppearance(robotId);
+  const pose = robotsPose[id_robo];
+  const appearance = getRobotAppearance(id_robo);
   const lastUpdate = pose?.lastUpdate ? new Date(pose.lastUpdate).toLocaleTimeString() : null;
 
-  useEffect(() => setDraftId(robotId), [robotId]);
+  useEffect(() => setDraftId(id_robo), [id_robo]);
 
   function selectRobot(event) {
     const nextId = event.target.value.trim();
@@ -44,7 +44,7 @@ export default function DigitalTwin({ robotsPose = {}, mqttOnline, robotId, onRo
             <div className={`twin-robot robot-shape-${appearance.shape}`} style={{ '--robot-color': appearance.color }}>
               <span>▲</span>
             </div>
-            <strong>{robotId}</strong>
+            <strong>{id_robo}</strong>
             <small>{pose ? `Última atualização: ${lastUpdate}` : 'Aguardando a primeira posição do robô'}</small>
           </article>
 
