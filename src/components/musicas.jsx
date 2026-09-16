@@ -4,11 +4,11 @@ import useMQTT from '../hooks/useMQTT';
 const BROKER = process.env.REACT_APP_MQTT_BROKER
     || 'wss://bfea296c.ala.us-east-1.emqxsl.com:8084/mqtt';
 
+// Cartão SD tem 3 músicas — ajuste os nomes conforme os arquivos reais no SD
 const musicasDisponiveis = [
     { nome: 'Música 1', id: 1, emoji: '🎤', cor: 'from-blue-400 to-purple-500'   },
     { nome: 'Música 2', id: 2, emoji: '🧟', cor: 'from-red-400 to-orange-500'    },
     { nome: 'Música 3', id: 3, emoji: '🎸', cor: 'from-green-400 to-emerald-500' },
-    { nome: 'Música 4', id: 4, emoji: '🕺', cor: 'from-pink-400 to-rose-500'     },
 ];
 
 function Musicas() {
@@ -17,7 +17,6 @@ function Musicas() {
     const [isPlaying,         setIsPlaying]         = useState(false);
     const [volume,            setVolume]            = useState(25); // 0–30
 
-    // Passa o brokerUrl explicitamente — garante as credenciais corretas
     const { sendCommand, isConnected } = useMQTT(BROKER);
 
     const aviso = useCallback((texto, tempo = 1800) => {
@@ -33,16 +32,18 @@ function Musicas() {
     }, [isConnected, aviso]);
 
     // ── Play ─────────────────────────────────────────────────────────────────
+    // Ordem: volume primeiro, depois play.
+    // O firmware agora reconhece DN0VOL (corrigido no MQTT_WEBSOCKET.h).
     const tocar = useCallback(() => {
-        if (!isConnected)      return aviso('⚠️ Sistema desconectado!', 2000);
+        if (!isConnected)       return aviso('⚠️ Sistema desconectado!', 2000);
         if (!musicaSelecionada) return aviso('⚠️ Selecione uma música!', 1500);
 
         const musica = musicasDisponiveis.find(m => m.id === musicaSelecionada);
         if (!musica) return;
 
-        // 1. Define volume antes de tocar
+        // 1. Ajusta volume antes de tocar
         sendCommand(`DN0VOL${volume}`, 'cmd');
-        // 2. Toca a música
+        // 2. Toca a música pelo ID do arquivo no SD (001.mp3, 002.mp3, 003.mp3)
         sendCommand(`DN0CM${musica.id}`, 'cmd');
 
         setIsPlaying(true);
@@ -58,6 +59,8 @@ function Musicas() {
     }, [isConnected, sendCommand, aviso]);
 
     // ── Mudança de volume em tempo real ──────────────────────────────────────
+    // Envia DN0VOL imediatamente ao mover o cursor;
+    // o firmware aplica via mp3SetVolume() (DFPlayer volume 0–30).
     const handleVolume = useCallback((e) => {
         const val = Number(e.target.value);
         setVolume(val);
@@ -101,24 +104,24 @@ function Musicas() {
                 </div>
             )}
 
-            {/* Grade de músicas */}
-            <div className="grid grid-cols-2 gap-2 w-full max-w-xs mb-4">
+            {/* Grade de músicas — 3 músicas (cartão SD) */}
+            <div className="grid grid-cols-3 gap-2 w-full max-w-xs mb-4">
                 {musicasDisponiveis.map(musica => (
                     <button
                         key={musica.id}
                         onClick={() => selecionarMusica(musica)}
                         disabled={!isConnected}
                         className={[
-                            'flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold',
+                            'flex flex-col items-center gap-1 px-2 py-3 rounded-xl text-xs font-semibold',
                             'transition-all duration-300',
                             musicaSelecionada === musica.id
-                                ? `bg-gradient-to-r ${musica.cor} text-white shadow-lg scale-[1.02]`
+                                ? `bg-gradient-to-r ${musica.cor} text-white shadow-lg scale-[1.04]`
                                 : 'bg-white/80 hover:bg-amber-50/80 border-2 border-amber-200/40 text-amber-800 hover:border-amber-300',
                             !isConnected ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
                         ].join(' ')}
                     >
-                        <span className="text-lg">{musica.emoji}</span>
-                        <span className="truncate">{musica.nome}</span>
+                        <span className="text-xl">{musica.emoji}</span>
+                        <span className="truncate w-full text-center">{musica.nome}</span>
                     </button>
                 ))}
             </div>
@@ -153,7 +156,7 @@ function Musicas() {
                 </button>
             </div>
 
-            {/* ── Controle de volume ──────────────────────────────────────── */}
+            {/* ── Cursor de volume ─────────────────────────────────────────── */}
             <div className="w-full max-w-xs">
                 <div className="flex justify-between items-center mb-1.5">
                     <span className="text-xs font-semibold text-amber-900 flex items-center gap-1">
@@ -173,6 +176,7 @@ function Musicas() {
                     </span>
                 </div>
 
+                {/* Cursor principal */}
                 <input
                     type="range"
                     min={0}
@@ -184,12 +188,15 @@ function Musicas() {
                     className="w-full h-2 rounded-lg appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 />
 
-                {/* Marcadores rápidos */}
+                {/* Atalhos de volume */}
                 <div className="flex justify-between mt-2 gap-1">
                     {[0, 10, 20, 25, 30].map(v => (
                         <button
                             key={v}
-                            onClick={() => { setVolume(v); if (isConnected) sendCommand(`DN0VOL${v}`, 'cmd'); }}
+                            onClick={() => {
+                                setVolume(v);
+                                if (isConnected) sendCommand(`DN0VOL${v}`, 'cmd');
+                            }}
                             disabled={!isConnected}
                             className={[
                                 'flex-1 py-1 rounded-lg text-[10px] font-bold transition-all',
