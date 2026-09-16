@@ -22,10 +22,16 @@ function ControleGiroscopio({ robotsPose = {}, id_robo = 'robo1', onRobotIdChang
     const isRobotConnected = poseDoRobo
         && (Date.now() - (poseDoRobo.lastUpdate || 0)) < 3000;
 
-    // Publica sempre em "cmd" (broadcast) para funcionar com firmware atual
+    // ── Resolve tópico correto ─────────────────────────────────────────────
+    // FIX: era 'cmd/${id_robo}' com aspas simples (string literal).
+    //      Agora usa template literal com backtick.
+    const resolverTopico = useCallback(() => {
+        return id_robo === 'all' ? 'cmd' : `cmd/${id_robo}`;
+    }, [id_robo]);
+
     const publicar = useCallback((comando) => {
-        sendCommand(comando, 'cmd/${id_robo}');
-    }, [sendCommand]);
+        sendCommand(comando, resolverTopico());
+    }, [sendCommand, resolverTopico]);
 
     const mapAngleToSpeed = (angle, center, sens) => {
         let speed = (angle - center) * sens;
@@ -92,8 +98,13 @@ function ControleGiroscopio({ robotsPose = {}, id_robo = 'robo1', onRobotIdChang
                 🎮 Controle por Giroscópio
             </section>
 
-            <div className={`text-sm mb-2 font-bold ${isRobotConnected ? 'text-green-600' : 'text-red-600'}`}>
+            <div className={`text-sm mb-1 font-bold ${isRobotConnected ? 'text-green-600' : 'text-red-600'}`}>
                 {isRobotConnected ? `✅ ${id_robo} conectado` : `❌ ${id_robo} desconectado`}
+            </div>
+
+            {/* Indicador do tópico ativo */}
+            <div className="text-xs text-gray-400 mb-2">
+                Tópico: <span className="font-mono text-pink-500">{resolverTopico()}</span>
             </div>
 
             <div className={`text-sm mb-4 ${isConnected ? 'text-green-500' : 'text-red-500'}`}>

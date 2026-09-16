@@ -20,13 +20,17 @@ function Controle({ robotsPose = {}, id_robo = 'robo1', onRobotIdChange = () => 
     const isRobotConnected = poseDoRobo
         && (Date.now() - (poseDoRobo.lastUpdate || 0)) < 3000;
 
-    // ── Publica comando de movimento ──────────────────────────────────────────
-    // Publica SEMPRE em "cmd" (broadcast), porque é o único tópico que o
-    // firmware atual assina. Quando o firmware novo for gravado com
-    // cmd/<id_robo>, trocar para `cmd/${id_robo}`.
+    // ── Resolve tópico correto ─────────────────────────────────────────────
+    // "all" → broadcast em "cmd"
+    // robô específico → "cmd/<id_robo>" (só esse robô processa)
+    const resolverTopico = useCallback(() => {
+        return id_robo === 'all' ? 'cmd' : `cmd/${id_robo}`;
+    }, [id_robo]);
+
+    // ── Publica no tópico correto ──────────────────────────────────────────
     const publicar = useCallback((comando) => {
-        sendCommand(comando, 'cmd');
-    }, [sendCommand]);
+        sendCommand(comando, resolverTopico());
+    }, [sendCommand, resolverTopico]);
 
     // ── Interruptor ON/OFF ────────────────────────────────────────────────────
     const handleInterruptor = useCallback(() => {
@@ -61,6 +65,11 @@ function Controle({ robotsPose = {}, id_robo = 'robo1', onRobotIdChange = () => 
                 {isRobotConnected
                     ? `✅ ${id_robo} conectado`
                     : `❌ ${id_robo} desconectado`}
+            </div>
+
+            {/* Indicador do tópico ativo */}
+            <div className="text-xs text-gray-400 mb-1">
+                Tópico: <span className="font-mono text-pink-500">{resolverTopico()}</span>
             </div>
 
             {!isConnected && (
