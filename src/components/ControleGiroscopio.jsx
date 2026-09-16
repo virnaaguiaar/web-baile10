@@ -24,7 +24,7 @@ function ControleGiroscopio({ robotsPose = {}, id_robo = 'robo1', onRobotIdChang
 
     // Publica sempre em "cmd" (broadcast) para funcionar com firmware atual
     const publicar = useCallback((comando) => {
-        sendCommand(comando, 'cmd/${id_robo}');
+        sendCommand(comando, 'cmd');
     }, [sendCommand]);
 
     const mapAngleToSpeed = (angle, center, sens) => {

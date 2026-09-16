@@ -25,7 +25,7 @@ function Controle({ robotsPose = {}, id_robo = 'robo1', onRobotIdChange = () => 
     // firmware atual assina. Quando o firmware novo for gravado com
     // cmd/<id_robo>, trocar para `cmd/${id_robo}`.
     const publicar = useCallback((comando) => {
-        sendCommand(comando, 'cmd/${id_robo}');
+        sendCommand(comando, 'cmd');
     }, [sendCommand]);
 
     // ── Interruptor ON/OFF ────────────────────────────────────────────────────
