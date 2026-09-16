@@ -13,6 +13,7 @@ import Sobre from './components/sobre';
 import ControleMultiRobo from './components/ControleMultiRobo';
 import DigitalTwin from './components/DigitalTwin';
 import ControleGiroscopio from './components/ControleGiroscopio';
+import CoreografiaFormas from './components/CoreografiaFormas';
 import useMQTT from './hooks/useMQTT';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
         { id: 'controle', label: '🎮 Controle Manual', icon: '🎮' },
         { id: 'giroscopio', label: '🎯 Controle por Giro', icon: '🎯' },
         { id: 'multi', label: '🤖 Multi-Robô', icon: '🤖' },
+        { id: 'formas', label: '🔷 Formas', icon: '🔷' },
         { id: 'twin', label: '🔄 Digital Twins', icon: '🔄' },
         { id: 'sobre', label: '📖 Sobre', icon: '📖' },
     ];
@@ -72,6 +74,19 @@ function App() {
                 return (
                     <div className="page-container animate-fadeIn">
                         <ControleMultiRobo robotsPose={robotsPose} mqttOnline={isConnected} />
+                    </div>
+                );
+            case 'formas':
+                return (
+                    <div className="page-container animate-fadeIn">
+                        <CoreografiaFormas
+                            robotsPose={robotsPose}
+                            id_robo={userRobotId}
+                            onRobotIdChange={(id) => {
+                                setUserRobotId(id);
+                                localStorage.setItem('digitalTwinRobotId', id);
+                            }}
+                        />
                     </div>
                 );
             case 'twin':
@@ -154,7 +169,7 @@ function App() {
                                     <span className="relative z-10 flex items-center gap-1.5">
                                         <span>{item.icon}</span>
                                         <span className="hidden md:inline">{item.label}</span>
-                                        <span className="md:hidden">{item.id === 'controle' ? 'Controle' : item.id === 'giroscopio' ? 'Giro' : item.id === 'multi' ? 'Multi' : item.id === 'twin' ? 'Twins' : 'Sobre'}</span>
+                                        <span className="md:hidden">{item.id === 'controle' ? 'Controle' : item.id === 'giroscopio' ? 'Giro' : item.id === 'multi' ? 'Multi' : item.id === 'formas' ? 'Formas' : item.id === 'twin' ? 'Twins' : 'Sobre'}</span>
                                     </span>
                                     {currentPage === item.id && (
                                         <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#f62681] to-[#F68621] opacity-20 blur-sm -z-0"></span>
