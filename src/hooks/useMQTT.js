@@ -70,8 +70,8 @@ export function useMQTT(
       setIsConnected(true);
       client.subscribe('cmd');
       client.subscribe('status');
-      client.subscribe('robot/pose/+');  // alimenta o mapa com todos os robôs
-      client.subscribe('robot/status');
+      client.subscribe('robo/pose/+');  // alimenta o mapa com todos os robôs
+      client.subscribe('robo/status');
     });
 
     client.on('message', (topic, payload) => {
@@ -79,9 +79,9 @@ export function useMQTT(
 
       if (topic === 'status') {
         setStatus(msg);
-      } else if (topic === 'robot/status') {
+      } else if (topic === 'robo/status') {
         console.log('📢 Status:', msg);
-      } else if (topic.startsWith('robot/pose/')) {
+      } else if (topic.startsWith('robo/pose/')) {
         const robotId = topic.split('/')[2];
         resetWatchdog(robotId);
         try {
