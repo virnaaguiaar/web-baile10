@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { useMQTT } from '../hooks/useMQTT';
+import useMQTT from '../hooks/useMQTT';
 import RobotPicker from './RobotPicker';
 
 // ─── Configurações das formas ────────────────────────────────────────────────
@@ -354,10 +354,15 @@ export default function CoreografiaFormas({ robotsPose = {}, id_robo = 'robo1', 
   }, [isConnected, executando, formaSelecionada, lado, sendCommand, topico, aviso]);
 
   const parar = useCallback(() => {
-    sendCommand('DN0CPA', topico());
+    // Envia em broadcast E no tópico individual: as funções de forma
+    // geométrica no firmware são bloqueantes (while + delay), o ESP32
+    // só processa o próximo pacote MQTT ao terminar cada iteração.
+    // Mandando nos dois tópicos garantimos que o DN0CPA entre no buffer.
+    sendCommand('DN0CPA', 'cmd');
+    if (id_robo !== 'all') sendCommand('DN0CPA', `cmd/${id_robo}`);
     setExecutando(false);
     aviso('🛑 Parado.');
-  }, [sendCommand, topico, aviso]);
+  }, [sendCommand, id_robo, aviso]);
 
   // Ao trocar forma, volta ao lado padrão dela
   const selecionarForma = useCallback((forma) => {
@@ -553,10 +558,12 @@ export default function CoreografiaFormas({ robotsPose = {}, id_robo = 'robo1', 
                 <button
                   onClick={parar}
                   disabled={!isConnected}
-                  className="px-5 py-4 rounded-2xl font-black text-white bg-gradient-to-br from-gray-600 to-gray-800 hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                  title="Parar imediatamente"
+                  className="px-6 py-4 rounded-2xl font-black text-white text-sm bg-gradient-to-br from-rose-600 to-red-700 hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-rose-500/30 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-2"
                 >
-                  🛑
+                  <svg viewBox="0 0 20 20" className="w-4 h-4 fill-white flex-shrink-0">
+                    <rect x="4" y="4" width="12" height="12" rx="2" />
+                  </svg>
+                  STOP
                 </button>
               </div>
 
