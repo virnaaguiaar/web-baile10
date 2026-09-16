@@ -3,47 +3,46 @@ import useMQTT from '../hooks/useMQTT';
 import RobotPicker   from './RobotPicker';
 import RobotFloorMap from './RobotFloorMap';
 
-function ControleGiroscopio({ robotsPose = {}, robotId = 'robo1', onRobotIdChange = () => {} }) {
+function ControleGiroscopio({ robotsPose = {}, id_robo = 'robo1', onRobotIdChange = () => {} }) {
     const brokerUrl = process.env.REACT_APP_MQTT_BROKER
         || 'wss://bfea296c.ala.us-east-1.emqxsl.com:8084/mqtt';
 
     const { sendCommand, isConnected } = useMQTT(brokerUrl);
 
-    const [gyroActive,  setGyroActive]  = useState(false);
-    const [calibration, setCalibration] = useState({ beta: 0, gamma: 0 });
-    const [sensitivity, setSensitivity] = useState(0.5);
-    const [lastCommand, setLastCommand] = useState('');
+    const [gyroActive,   setGyroActive]   = useState(false);
+    const [calibration,  setCalibration]  = useState({ beta: 0, gamma: 0 });
+    const [sensitivity,  setSensitivity]  = useState(0.5);
+    const [lastCommand,  setLastCommand]  = useState('');
 
     const lastSendRef    = useRef(0);
     const lastCommandRef = useRef('');
-    const robotIdRef     = useRef(robotId);
-    useEffect(() => { robotIdRef.current = robotId; }, [robotId]);
 
-    // Círculo verde baseado na pose do robô selecionado
-    const poseDoRobo = robotsPose[robotId];
-    const isRobotConnected = Boolean(poseDoRobo)
+    // Círculo verde: pose do robô selecionado chegou nos últimos 3s
+    const poseDoRobo = robotsPose[id_robo];
+    const isRobotConnected = poseDoRobo
         && (Date.now() - (poseDoRobo.lastUpdate || 0)) < 3000;
 
-    // Publica no tópico do robô selecionado (requer firmware atualizado)
+    // Publica sempre em "cmd" (broadcast) para funcionar com firmware atual
     const publicar = useCallback((comando) => {
-        const id = robotIdRef.current;
-        const topico = id === 'all' ? 'cmd' : `cmd/${id}`;
-        sendCommand(comando, topico);
+        sendCommand(comando, 'cmd/${id_robo}');
     }, [sendCommand]);
 
     const mapAngleToSpeed = (angle, center, sens) => {
         let speed = (angle - center) * sens;
-        return Math.round(Math.max(-9, Math.min(9, speed)));
+        speed = Math.max(-9, Math.min(9, speed));
+        return Math.round(speed);
     };
 
     const handleOrientation = useCallback((event) => {
         if (!gyroActive) return;
+
         const now = Date.now();
-        if (now - lastSendRef.current < 50) return;
+        if (now - lastSendRef.current < 50) return; // throttle 20 Hz
         lastSendRef.current = now;
 
         let speedY = mapAngleToSpeed(event.beta  || 0, calibration.beta,  sensitivity);
         let speedX = mapAngleToSpeed(event.gamma || 0, calibration.gamma, sensitivity);
+
         if (Math.abs(speedY) < 1) speedY = 0;
         if (Math.abs(speedX) < 1) speedX = 0;
 
@@ -53,9 +52,8 @@ function ControleGiroscopio({ robotsPose = {}, robotId = 'robo1', onRobotIdChang
 
         if (speedX !== 0 || speedY !== 0) {
             const dirX = speedX >= 0 ? '+' : '-';
-            const vy   = -speedY;
-            const dirY = vy >= 0 ? '+' : '-';
-            publicar(`DN0X${dirX}${Math.abs(speedX)}Y${dirY}${Math.abs(vy)}`);
+            const dirY = (-speedY) >= 0 ? '+' : '-';
+            publicar(`DN0X${dirX}${Math.abs(speedX)}Y${dirY}${Math.abs(-speedY)}`);
             setLastCommand(`X=${speedX}, Y=${-speedY}`);
         } else {
             publicar('DN0CPA');
@@ -94,9 +92,10 @@ function ControleGiroscopio({ robotsPose = {}, robotId = 'robo1', onRobotIdChang
                 🎮 Controle por Giroscópio
             </section>
 
-            <div className={`text-sm mb-1 font-bold ${isRobotConnected ? 'text-green-600' : 'text-red-600'}`}>
-                {isRobotConnected ? `✅ ${robotId} conectado` : `❌ ${robotId} desconectado`}
+            <div className={`text-sm mb-2 font-bold ${isRobotConnected ? 'text-green-600' : 'text-red-600'}`}>
+                {isRobotConnected ? `✅ ${id_robo} conectado` : `❌ ${id_robo} desconectado`}
             </div>
+
             <div className={`text-sm mb-4 ${isConnected ? 'text-green-500' : 'text-red-500'}`}>
                 {isConnected ? '🌐 MQTT conectado' : '❌ MQTT desconectado'}
             </div>
@@ -107,7 +106,7 @@ function ControleGiroscopio({ robotsPose = {}, robotId = 'robo1', onRobotIdChang
                 </div>
             )}
 
-            <RobotPicker robotId={robotId} onRobotIdChange={onRobotIdChange} robotsPose={robotsPose} />
+            <RobotPicker id_robo={id_robo} onRobotIdChange={onRobotIdChange} robotsPose={robotsPose} />
 
             {!gyroActive ? (
                 <button
@@ -178,7 +177,7 @@ function ControleGiroscopio({ robotsPose = {}, robotId = 'robo1', onRobotIdChang
             <RobotFloorMap
                 robotsPose={robotsPose}
                 mqttOnline={isConnected}
-                selectedRobotId={robotId}
+                selectedRobotId={id_robo}
                 title="Onde estão os robôs"
             />
         </div>
