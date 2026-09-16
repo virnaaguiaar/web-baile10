@@ -8,46 +8,59 @@ import RobotPicker   from './RobotPicker';
 import RobotFloorMap from './RobotFloorMap';
 
 function Controle({ robotsPose = {}, robotId = 'robo1', onRobotIdChange = () => {} }) {
-    const brokerUrl = process.env.REACT_APP_MQTT_BROKER || 'wss://bfea296c.ala.us-east-1.emqxsl.com:8084/mqtt';
+    const brokerUrl = process.env.REACT_APP_MQTT_BROKER
+        || 'wss://bfea296c.ala.us-east-1.emqxsl.com:8084/mqtt';
 
-    // Passa robotId para o watchdog — isRobotConnected fica verde só quando
-    // a pose DESTE robô chegar, não de qualquer outro.
-    const { moverRobo, pararRobo, sendCommand, isConnected, isRobotConnected } =
-        useMQTT(brokerUrl, robotId === 'all' ? null : robotId);
-
+    const { sendCommand, isConnected } = useMQTT(brokerUrl);
     const [activeDir,   setActiveDir]   = useState(null);
-    // Interruptor físico: true = robô habilitado; false = parado
     const [robotLigado, setRobotLigado] = useState(true);
 
-    // ── Interruptor ────────────────────────────────────────────────────────
+    // Círculo verde: true se a pose do robô selecionado chegou nos últimos 3s
+    const poseDoRobo = robotsPose[robotId];
+    const isRobotConnected = poseDoRobo
+        && (Date.now() - (poseDoRobo.lastUpdate || 0)) < 3000;
+
+    // ── Publica comando de movimento ──────────────────────────────────────────
+    // Publica SEMPRE em "cmd" (broadcast), porque é o único tópico que o
+    // firmware atual assina. Quando o firmware novo for gravado com
+    // cmd/<id_robo>, trocar para `cmd/${robotId}`.
+    const publicar = useCallback((comando) => {
+        sendCommand(comando, 'cmd');
+    }, [sendCommand]);
+
+    // ── Interruptor ON/OFF ────────────────────────────────────────────────────
     const handleInterruptor = useCallback(() => {
         if (!isConnected) return;
         if (robotLigado) {
-            const topico = robotId === 'all' ? 'cmd' : `cmd/${robotId}`;
-            sendCommand('DN0CPA', topico);
+            publicar('DN0CPA');
             setRobotLigado(false);
         } else {
             setRobotLigado(true);
         }
-    }, [isConnected, robotLigado, robotId, sendCommand]);
+    }, [isConnected, robotLigado, publicar]);
 
+    // ── Botões direcionais ────────────────────────────────────────────────────
     const handleStart = useCallback((x, y, dir) => {
-        if (!robotLigado) return;
-        moverRobo(robotId, x, y);
+        if (!robotLigado || !isConnected) return;
+        const dirX = x >= 0 ? '+' : '-';
+        const dirY = y >= 0 ? '+' : '-';
+        publicar(`DN0X${dirX}${Math.abs(x)}Y${dirY}${Math.abs(y)}`);
         setActiveDir(dir);
-    }, [moverRobo, robotId, robotLigado]);
+    }, [robotLigado, isConnected, publicar]);
 
     const handleStop = useCallback(() => {
-        pararRobo(robotId);
+        publicar('DN0CPA');
         setActiveDir(null);
-    }, [pararRobo, robotId]);
+    }, [publicar]);
 
     return (
         <div className="flex flex-col items-center w-full">
 
-            {/* Status de conexão */}
+            {/* Status do robô selecionado */}
             <div className={`text-sm mb-1 font-bold ${isRobotConnected ? 'text-green-600' : 'text-red-600'}`}>
-                {isRobotConnected ? '✅ Robô Conectado' : '❌ Robô Desconectado'}
+                {isRobotConnected
+                    ? `✅ ${robotId} conectado`
+                    : `❌ ${robotId} desconectado`}
             </div>
 
             {!isConnected && (
@@ -62,7 +75,7 @@ function Controle({ robotsPose = {}, robotId = 'robo1', onRobotIdChange = () => 
 
             <RobotPicker robotId={robotId} onRobotIdChange={onRobotIdChange} robotsPose={robotsPose} />
 
-            {/* ── INTERRUPTOR FÍSICO ──────────────────────────────────────── */}
+            {/* ── Interruptor ON/OFF ──────────────────────────────────────── */}
             <div className="mt-5 flex flex-col items-center gap-2">
                 <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest">
                     Interruptor do Robô
@@ -71,7 +84,6 @@ function Controle({ robotsPose = {}, robotId = 'robo1', onRobotIdChange = () => 
                     onClick={handleInterruptor}
                     disabled={!isConnected}
                     aria-pressed={robotLigado}
-                    title={robotLigado ? 'Clique para DESLIGAR' : 'Clique para LIGAR'}
                     className={[
                         'relative inline-flex items-center w-20 h-10 rounded-full border-2',
                         'transition-all duration-300 focus:outline-none',
@@ -86,16 +98,15 @@ function Controle({ robotsPose = {}, robotId = 'robo1', onRobotIdChange = () => 
                         'absolute w-7 h-7 bg-white rounded-full shadow-md transition-all duration-300',
                         robotLigado ? 'left-[calc(100%-30px)]' : 'left-1',
                     ].join(' ')} />
-                    <span className={`absolute text-[10px] font-black tracking-wider transition-opacity duration-200 ${robotLigado ? 'left-2.5 text-white opacity-100' : 'opacity-0'}`}>ON</span>
-                    <span className={`absolute text-[10px] font-black tracking-wider text-gray-400 transition-opacity duration-200 ${!robotLigado ? 'right-2 opacity-100' : 'opacity-0'}`}>OFF</span>
+                    <span className={`absolute text-[10px] font-black tracking-wider transition-opacity ${robotLigado ? 'left-2.5 text-white opacity-100' : 'opacity-0'}`}>ON</span>
+                    <span className={`absolute text-[10px] font-black tracking-wider text-gray-400 transition-opacity ${!robotLigado ? 'right-2 opacity-100' : 'opacity-0'}`}>OFF</span>
                 </button>
                 <span className={`text-xs font-bold ${robotLigado ? 'text-emerald-600' : 'text-gray-400'}`}>
                     {robotLigado ? '🟢 Robô ligado' : '⚫ Robô desligado'}
                 </span>
             </div>
-            {/* ───────────────────────────────────────────────────────────── */}
 
-            {/* Controles direcionais */}
+            {/* ── Direcionais ─────────────────────────────────────────────── */}
             <div className={`flex flex-row mt-6 gap-3 sm:gap-4 transition-opacity duration-300 ${!robotLigado ? 'opacity-40 pointer-events-none' : ''}`}>
 
                 {/* ESQUERDA */}
