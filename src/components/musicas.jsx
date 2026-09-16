@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import useMQTT from '../hooks/useMQTT';
 
 const musicasDisponiveis = [
-    { nome: 'Billie Jean',      id: 1, emoji: '🎤', cor: 'from-blue-400 to-purple-500' },
-    { nome: 'Thriller',         id: 2, emoji: '🧟', cor: 'from-red-400 to-orange-500' },
-    { nome: 'Beat It',          id: 3, emoji: '🎸', cor: 'from-green-400 to-emerald-500' },
-    { nome: 'Smooth Criminal',  id: 4, emoji: '🕺', cor: 'from-pink-400 to-rose-500' }
+    { nome: 'Música 1',      id: 1, emoji: '🎤', cor: 'from-blue-400 to-purple-500' },
+    { nome: 'Música 2',         id: 2, emoji: '🧟', cor: 'from-red-400 to-orange-500' },
+    { nome: 'Música 3',          id: 3, emoji: '🎸', cor: 'from-green-400 to-emerald-500' },
+    { nome: 'Música 4',  id: 4, emoji: '🕺', cor: 'from-pink-400 to-rose-500' }
 ];
 
 function Musicas() {
@@ -13,9 +13,6 @@ function Musicas() {
     const [mensagem, setMensagem] = useState('');
     const [isPlaying, setIsPlaying] = useState(false);
 
-    // useMQTT publica:
-    //   mp3TocarMusica(id)  ->  "DN0CM{id}"
-    //   mp3PararMusica()    ->  "DN0CPS"
     const { mp3TocarMusica, mp3PararMusica, isConnected } = useMQTT();
 
     const aviso = (texto, tempo = 1800) => {
