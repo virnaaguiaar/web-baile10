@@ -122,7 +122,7 @@ function Musicas({ robotLigado = true, topico = 'cmd' }) {
                         'flex-1 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300',
                         (!habilitado || !musicaSelecionada || isPlaying)
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-[#f62681] text-white hover:bg-[#e8197a] hover:shadow-lg hover:shadow-[#f62681]/30 hover:-translate-y-0.5 active:scale-95',
+                            : 'bg-[#11813a] text-white hover:bg-[#e8197a] hover:shadow-lg hover:shadow-[#f62681]/30 hover:-translate-y-0.5 active:scale-95',
                     ].join(' ')}
                 >
                     ▶ PLAY
@@ -134,7 +134,7 @@ function Musicas({ robotLigado = true, topico = 'cmd' }) {
                         'flex-1 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300',
                         (!isConnected || !isPlaying)
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-[#9d174d] text-white hover:bg-[#be185d] hover:shadow-lg hover:shadow-[#9d174d]/30 hover:-translate-y-0.5 active:scale-95',
+                            : 'bg-[#9d174d] text-white hover:bg-[#cd01919] hover:shadow-lg hover:shadow-[#9d174d]/30 hover:-translate-y-0.5 active:scale-95',
                     ].join(' ')}
                 >
                     ⏹ STOP

@@ -21,7 +21,7 @@ function Controle({ robotsPose = {}, id_robo = 'robo1', onRobotIdChange = () => 
     const isRobotConnected = poseDoRobo && (Date.now() - (poseDoRobo.lastUpdate || 0)) < 3000;
 
     const resolverTopico = useCallback(() =>
-        id_robo === 'all' ? 'cmd' : `cmd/${id_robo}`, [id_robo]);
+        id_robo === 'Todos' ? 'cmd' : `cmd/${id_robo}`, [id_robo]);
 
     const publicar = useCallback((cmd) =>
         sendCommand(cmd, resolverTopico()), [sendCommand, resolverTopico]);
@@ -69,7 +69,7 @@ function Controle({ robotsPose = {}, id_robo = 'robo1', onRobotIdChange = () => 
                     </div>
                 )}
 
-                <h1 className="py-2 text-3xl sm:text-4xl md:text-5xl font-bold text-center text-[#9d174d]">
+                <h1 className="py-2 text-3xl sm:text-4xl md:text-5xl font-bold text-center text-[#f62681]">
                     Controle Manual
                 </h1>
 
@@ -86,10 +86,10 @@ function Controle({ robotsPose = {}, id_robo = 'robo1', onRobotIdChange = () => 
                         aria-pressed={robotLigado}
                         className={[
                             'relative inline-flex items-center w-20 h-10 rounded-full border-2 transition-all duration-300 focus:outline-none',
-                            'focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#f62681]',
+                            'focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#11813a]',
                             !isConnected ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
                             robotLigado
-                                ? 'bg-[#f62681] border-[#f62681] shadow-lg shadow-[#f62681]/30'
+                                ? 'bg-[#11813a] border-[#11813a] shadow-lg shadow-[#11813a]/30'
                                 : 'bg-gray-200 border-gray-300',
                         ].join(' ')}
                     >

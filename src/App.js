@@ -79,7 +79,7 @@ function App() {
     const maisAtivo = navSecundarios.some(i => i.id === currentPage);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#f62681] via-[#e8197a] to-[#fdf2f8]">
+        <div className="min-h-screen bg-gradient-to-br from-[#fdf2f8] via-[#e8197a] to-[#f62681]">
 
             {/* ── HEADER ─────────────────────────────────────────────────────── */}
             <header className="sticky top-0 z-40 bg-white/96 backdrop-blur-md border-b border-[#f62681]/15 shadow-sm">

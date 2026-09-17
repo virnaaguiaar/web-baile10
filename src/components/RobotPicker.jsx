@@ -7,7 +7,7 @@ export default function RobotPicker({
   robotsPose      = {},
 }) {
   const handleSelect = useCallback((id) => onRobotIdChange(id), [onRobotIdChange]);
-  const isAll = id_robo === 'all';
+  const isAll = id_robo === 'Todos';
 
   return (
     <div className="w-full max-w-xs mx-auto mt-3 mb-1 px-2 sm:px-0 select-none">
@@ -52,7 +52,7 @@ export default function RobotPicker({
 
         {/* Botão "Todos" */}
         <button
-          onClick={() => handleSelect('all')}
+          onClick={() => handleSelect('Todos')}
           title="Enviar comandos para todos os robôs ao mesmo tempo"
           className={`
             relative flex flex-col items-center justify-center
@@ -60,7 +60,7 @@ export default function RobotPicker({
             transition-all duration-200 focus:outline-none
             focus-visible:ring-2 focus-visible:ring-[#f62681]
             ${isAll
-              ? 'bg-[#9d174d] text-white border-[#9d174d] shadow-lg shadow-[#9d174d]/30 scale-105'
+              ? 'bg-[#11813a] text-white border-[#11813a] shadow-lg shadow-[#11813a]/30 scale-105'
               : 'bg-white text-[#f62681]/70 border-[#f62681]/25 hover:border-[#f62681]/60 hover:bg-[#fdf2f8] hover:scale-105'
             }
           `}

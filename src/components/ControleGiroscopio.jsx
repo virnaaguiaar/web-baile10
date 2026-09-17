@@ -26,7 +26,7 @@ function ControleGiroscopio({ robotsPose = {}, id_robo = 'robo1', onRobotIdChang
     // FIX: era 'cmd/${id_robo}' com aspas simples (string literal).
     //      Agora usa template literal com backtick.
     const resolverTopico = useCallback(() => {
-        return id_robo === 'all' ? 'cmd' : `cmd/${id_robo}`;
+        return id_robo === 'Todos' ? 'cmd' : `cmd/${id_robo}`;
     }, [id_robo]);
 
     const publicar = useCallback((comando) => {

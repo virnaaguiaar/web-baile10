@@ -331,7 +331,7 @@ export default function CoreografiaFormas({ robotsPose = {}, id_robo = 'robo1', 
 
   // Resolve tópico: individual ou broadcast
   const topico = useCallback(
-    () => (id_robo === 'all' ? 'cmd' : `cmd/${id_robo}`),
+    () => (id_robo === 'Todos' ? 'cmd' : `cmd/${id_robo}`),
     [id_robo]
   );
 
@@ -359,7 +359,7 @@ export default function CoreografiaFormas({ robotsPose = {}, id_robo = 'robo1', 
     // só processa o próximo pacote MQTT ao terminar cada iteração.
     // Mandando nos dois tópicos garantimos que o DN0CPA entre no buffer.
     sendCommand('DN0CPA', 'cmd');
-    if (id_robo !== 'all') sendCommand('DN0CPA', `cmd/${id_robo}`);
+    if (id_robo !== 'Todos') sendCommand('DN0CPA', `cmd/${id_robo}`);
     setExecutando(false);
     aviso('🛑 Parado.');
   }, [sendCommand, id_robo, aviso]);

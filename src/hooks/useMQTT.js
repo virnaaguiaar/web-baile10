@@ -121,11 +121,11 @@ export function useMQTT(
   const parar     = useCallback(()      => sendCommand('DN0CPA', 'cmd'),            [sendCommand]);
 
   const moverRobo = useCallback((id_robo, x, y) => {
-    sendCommand(_buildMoveCmd(x, y), id_robo === 'all' ? 'cmd' : `cmd/${id_robo}`);
+    sendCommand(_buildMoveCmd(x, y), id_robo === 'Todos' ? 'cmd' : `cmd/${id_robo}`);
   }, [sendCommand]);
 
   const pararRobo = useCallback((id_robo) => {
-    sendCommand('DN0CPA', id_robo === 'all' ? 'cmd' : `cmd/${id_robo}`);
+    sendCommand('DN0CPA', id_robo === 'Todos' ? 'cmd' : `cmd/${id_robo}`);
   }, [sendCommand]);
 
   const ligarLed           = useCallback((n)  => { if (n >= 0 && n <= 7) sendCommand(`DN0CL${n}`); },  [sendCommand]);
