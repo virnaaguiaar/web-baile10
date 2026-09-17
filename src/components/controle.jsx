@@ -6,8 +6,8 @@ import Direita  from '../assets/seta_rigth.jpg';
 import Baixo    from '../assets/seta_down.png';
 import RobotPicker   from './RobotPicker';
 import RobotFloorMap from './RobotFloorMap';
-import Musicas        from './musicas';
-import Coreografia    from './coreografia';
+import Musicas    from './musicas';
+import Coreografia from './coreografia';
 
 function Controle({ robotsPose = {}, id_robo = 'robo1', onRobotIdChange = () => {} }) {
     const brokerUrl = process.env.REACT_APP_MQTT_BROKER
@@ -17,26 +17,19 @@ function Controle({ robotsPose = {}, id_robo = 'robo1', onRobotIdChange = () => 
     const [activeDir,   setActiveDir]   = useState(null);
     const [robotLigado, setRobotLigado] = useState(true);
 
-    // Indica se a pose do robô selecionado chegou nos últimos 3s
     const poseDoRobo = robotsPose[id_robo];
-    const isRobotConnected = poseDoRobo
-        && (Date.now() - (poseDoRobo.lastUpdate || 0)) < 3000;
+    const isRobotConnected = poseDoRobo && (Date.now() - (poseDoRobo.lastUpdate || 0)) < 3000;
 
-    // Tópico correto: broadcast ou individual
-    const resolverTopico = useCallback(() => {
-        return id_robo === 'all' ? 'cmd' : `cmd/${id_robo}`;
-    }, [id_robo]);
+    const resolverTopico = useCallback(() =>
+        id_robo === 'all' ? 'cmd' : `cmd/${id_robo}`, [id_robo]);
 
-    const publicar = useCallback((comando) => {
-        sendCommand(comando, resolverTopico());
-    }, [sendCommand, resolverTopico]);
+    const publicar = useCallback((cmd) =>
+        sendCommand(cmd, resolverTopico()), [sendCommand, resolverTopico]);
 
-    // Interruptor ON/OFF — ao desligar envia parada e para a música
     const handleInterruptor = useCallback(() => {
         if (!isConnected) return;
         if (robotLigado) {
             publicar('DN0CPA');
-            // Para a música ao desligar o robô
             sendCommand('DN0CPS', resolverTopico());
             setRobotLigado(false);
         } else {
@@ -44,12 +37,9 @@ function Controle({ robotsPose = {}, id_robo = 'robo1', onRobotIdChange = () => 
         }
     }, [isConnected, robotLigado, publicar, sendCommand, resolverTopico]);
 
-    // Botões direcionais
     const handleStart = useCallback((x, y, dir) => {
         if (!robotLigado || !isConnected) return;
-        const dirX = x >= 0 ? '+' : '-';
-        const dirY = y >= 0 ? '+' : '-';
-        publicar(`DN0X${dirX}${Math.abs(x)}Y${dirY}${Math.abs(y)}`);
+        publicar(`DN0X${x >= 0 ? '+' : '-'}${Math.abs(x)}Y${y >= 0 ? '+' : '-'}${Math.abs(y)}`);
         setActiveDir(dir);
     }, [robotLigado, isConnected, publicar]);
 
@@ -61,36 +51,33 @@ function Controle({ robotsPose = {}, id_robo = 'robo1', onRobotIdChange = () => 
     return (
         <div className="flex flex-col items-center w-full gap-6">
 
-            {/* ── Painel de controle ──────────────────────────────────────── */}
+            {/* ── Painel principal ────────────────────────────────────────────── */}
             <div className="flex flex-col items-center w-full">
 
-                {/* Status do robô selecionado */}
-                <div className={`text-sm mb-1 font-bold ${isRobotConnected ? 'text-green-600' : 'text-red-600'}`}>
-                    {isRobotConnected
-                        ? `✅ ${id_robo} conectado`
-                        : `❌ ${id_robo} desconectado`}
+                {/* Status do robô */}
+                <div className={`text-sm mb-1 font-bold ${isRobotConnected ? 'text-emerald-600' : 'text-rose-500'}`}>
+                    {isRobotConnected ? `✅ ${id_robo} conectado` : `❌ ${id_robo} desconectado`}
                 </div>
 
-                {/* Indicador do tópico ativo */}
-                <div className="text-xs text-gray-400 mb-1">
-                    Tópico: <span className="font-mono text-pink-500">{resolverTopico()}</span>
+                <div className="text-xs text-[#f62681]/50 mb-1">
+                    Tópico: <span className="font-mono text-[#f62681]">{resolverTopico()}</span>
                 </div>
 
                 {!isConnected && (
-                    <div className="text-xs text-red-500 mb-2 font-bold text-center animate-pulse px-4">
+                    <div className="text-xs text-rose-500 mb-2 font-bold text-center animate-pulse px-4">
                         ⚠️ Sem conexão com o Servidor em Nuvem (EMQX)
                     </div>
                 )}
 
-                <section className="p-2.5 text-3xl sm:text-4xl md:text-5xl font-bold text-center text-pink-950">
+                <h1 className="py-2 text-3xl sm:text-4xl md:text-5xl font-bold text-center text-[#9d174d]">
                     Controle Manual
-                </section>
+                </h1>
 
                 <RobotPicker id_robo={id_robo} onRobotIdChange={onRobotIdChange} robotsPose={robotsPose} />
 
-                {/* Interruptor ON/OFF */}
+                {/* Interruptor */}
                 <div className="mt-5 flex flex-col items-center gap-2">
-                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest">
+                    <span className="text-xs font-semibold text-[#f62681]/60 uppercase tracking-widest">
                         Interruptor do Robô
                     </span>
                     <button
@@ -98,12 +85,11 @@ function Controle({ robotsPose = {}, id_robo = 'robo1', onRobotIdChange = () => 
                         disabled={!isConnected}
                         aria-pressed={robotLigado}
                         className={[
-                            'relative inline-flex items-center w-20 h-10 rounded-full border-2',
-                            'transition-all duration-300 focus:outline-none',
-                            'focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-pink-400',
+                            'relative inline-flex items-center w-20 h-10 rounded-full border-2 transition-all duration-300 focus:outline-none',
+                            'focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#f62681]',
                             !isConnected ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
                             robotLigado
-                                ? 'bg-gradient-to-r from-emerald-400 to-emerald-500 border-emerald-500 shadow-lg shadow-emerald-300/40'
+                                ? 'bg-[#f62681] border-[#f62681] shadow-lg shadow-[#f62681]/30'
                                 : 'bg-gray-200 border-gray-300',
                         ].join(' ')}
                     >
@@ -130,37 +116,52 @@ function Controle({ robotsPose = {}, id_robo = 'robo1', onRobotIdChange = () => 
                             onTouchStart={(e) => { e.preventDefault(); handleStart(0, -5, 'esquerda'); }}
                             onTouchEnd={handleStop}
                             onContextMenu={(e) => e.preventDefault()}
-                            className={`flex justify-center items-center w-14 h-14 sm:w-16 sm:h-16 transition-transform duration-100 ${activeDir === 'esquerda' ? 'scale-110' : 'hover:scale-105'}`}
+                            className={`flex justify-center items-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl transition-all duration-100 border-2 ${
+                                activeDir === 'esquerda'
+                                    ? 'scale-110 border-[#f62681] bg-[#fdf2f8]'
+                                    : 'border-transparent hover:scale-105 hover:bg-[#fdf2f8]'
+                            }`}
                         >
-                            <img src={Esquerda} alt="seta esquerda" className="w-9 h-9 sm:w-12 sm:h-12" />
+                            <img src={Esquerda} alt="esquerda" className="w-9 h-9 sm:w-11 sm:h-11" />
                         </button>
-                        <span className="text-xs mt-1 text-gray-600">Girar Esquerda</span>
+                        <span className="text-[10px] mt-1 text-[#f62681]/60 font-medium">Girar Esq.</span>
                     </div>
 
                     {/* CIMA / BAIXO */}
-                    <div className="flex flex-col items-center space-y-4">
+                    <div className="flex flex-col items-center gap-1">
                         <button
                             onMouseDown={() => handleStart(5, 0, 'cima')}
                             onMouseUp={handleStop}
                             onTouchStart={(e) => { e.preventDefault(); handleStart(5, 0, 'cima'); }}
                             onTouchEnd={handleStop}
                             onContextMenu={(e) => e.preventDefault()}
-                            className={`flex justify-center items-center w-14 h-14 sm:w-16 sm:h-16 transition-transform duration-100 ${activeDir === 'cima' ? 'scale-110' : 'hover:scale-105'}`}
+                            className={`flex justify-center items-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl transition-all duration-100 border-2 ${
+                                activeDir === 'cima'
+                                    ? 'scale-110 border-[#f62681] bg-[#fdf2f8]'
+                                    : 'border-transparent hover:scale-105 hover:bg-[#fdf2f8]'
+                            }`}
                         >
-                            <img src={Cima} alt="seta cima" className="w-9 h-9 sm:w-12 sm:h-12" />
+                            <img src={Cima} alt="cima" className="w-9 h-9 sm:w-11 sm:h-11" />
                         </button>
-                        <span className="text-xs -mt-2 text-gray-600">Frente</span>
+                        <span className="text-[10px] text-[#f62681]/60 font-medium">Frente</span>
+
+                        <div className="h-2" />
+
                         <button
                             onMouseDown={() => handleStart(-5, 0, 'baixo')}
                             onMouseUp={handleStop}
                             onTouchStart={(e) => { e.preventDefault(); handleStart(-5, 0, 'baixo'); }}
                             onTouchEnd={handleStop}
                             onContextMenu={(e) => e.preventDefault()}
-                            className={`flex justify-center items-center w-14 h-14 sm:w-16 sm:h-16 transition-transform duration-100 ${activeDir === 'baixo' ? 'scale-110' : 'hover:scale-105'}`}
+                            className={`flex justify-center items-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl transition-all duration-100 border-2 ${
+                                activeDir === 'baixo'
+                                    ? 'scale-110 border-[#f62681] bg-[#fdf2f8]'
+                                    : 'border-transparent hover:scale-105 hover:bg-[#fdf2f8]'
+                            }`}
                         >
-                            <img src={Baixo} alt="seta baixo" className="w-9 h-9 sm:w-12 sm:h-12" />
+                            <img src={Baixo} alt="baixo" className="w-9 h-9 sm:w-11 sm:h-11" />
                         </button>
-                        <span className="text-xs -mt-2 text-gray-600">Trás</span>
+                        <span className="text-[10px] text-[#f62681]/60 font-medium">Trás</span>
                     </div>
 
                     {/* DIREITA */}
@@ -171,11 +172,15 @@ function Controle({ robotsPose = {}, id_robo = 'robo1', onRobotIdChange = () => 
                             onTouchStart={(e) => { e.preventDefault(); handleStart(0, 5, 'direita'); }}
                             onTouchEnd={handleStop}
                             onContextMenu={(e) => e.preventDefault()}
-                            className={`flex justify-center items-center w-14 h-14 sm:w-16 sm:h-16 pl-[10%] transition-transform duration-100 ${activeDir === 'direita' ? 'scale-110' : 'hover:scale-105'}`}
+                            className={`flex justify-center items-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl transition-all duration-100 border-2 ${
+                                activeDir === 'direita'
+                                    ? 'scale-110 border-[#f62681] bg-[#fdf2f8]'
+                                    : 'border-transparent hover:scale-105 hover:bg-[#fdf2f8]'
+                            }`}
                         >
-                            <img src={Direita} alt="seta direita" className="w-9 h-9 sm:w-12 sm:h-12" />
+                            <img src={Direita} alt="direita" className="w-9 h-9 sm:w-11 sm:h-11" />
                         </button>
-                        <span className="text-xs mt-1 text-gray-600">Girar Direita</span>
+                        <span className="text-[10px] mt-1 text-[#f62681]/60 font-medium">Girar Dir.</span>
                     </div>
                 </div>
 
@@ -187,21 +192,13 @@ function Controle({ robotsPose = {}, id_robo = 'robo1', onRobotIdChange = () => 
                 />
             </div>
 
-            {/* ── Música e Coreografia recebem o estado do interruptor ──────── */}
-            {/* IMPORTANTE: ficam AQUI dentro de Controle para compartilhar
-                robotLigado sem prop-drilling extra no App.js             */}
-            <div className="flex w-full max-w-[1100px] gap-6 max-md:flex-col max-md:gap-4">
+            {/* ── Música + Coreografia herdam estado do interruptor ─────────── */}
+            <div className="flex w-full max-w-[1100px] gap-4 max-md:flex-col">
                 <div className="flex-1">
-                    <Musicas
-                        robotLigado={robotLigado}
-                        topico={resolverTopico()}
-                    />
+                    <Musicas robotLigado={robotLigado} topico={resolverTopico()} />
                 </div>
                 <div className="flex-1">
-                    <Coreografia
-                        robotLigado={robotLigado}
-                        topico={resolverTopico()}
-                    />
+                    <Coreografia robotLigado={robotLigado} topico={resolverTopico()} />
                 </div>
             </div>
         </div>

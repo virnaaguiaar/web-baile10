@@ -6,26 +6,29 @@ import Facebook  from './assets/face-logo.png';
 import Instagram from './assets/insta-logo.png';
 import UFRN      from './assets/ufrn-logo.png';
 import Lance     from './assets/lance-logo.png';
-import Controle          from './components/controle';
-import Sobre             from './components/sobre';
-import ControleMultiRobo from './components/ControleMultiRobo';
-import DigitalTwin       from './components/DigitalTwin';
+import Controle           from './components/controle';
+import Sobre              from './components/sobre';
+import ControleMultiRobo  from './components/ControleMultiRobo';
+import DigitalTwin        from './components/DigitalTwin';
 import ControleGiroscopio from './components/ControleGiroscopio';
 import useMQTT from './hooks/useMQTT';
 
-// ─── Abas disponíveis (Formas removida) ────────────────────────────────────
+// ── "Manual" é o novo nome da aba controle ──────────────────────────────────
 const NAV_ITEMS = [
-    { id: 'controle',   label: 'Controle',  icon: '🎮' },
-    { id: 'giroscopio', label: 'Giroscópio',icon: '🎯' },
-    { id: 'multi',      label: 'Multi-Robô',icon: '🤖' },
-    { id: 'twin',       label: 'Twins',     icon: '🔄' },
-    { id: 'sobre',      label: 'Sobre',     icon: '📖' },
+    { id: 'controle',   label: 'Manual',     icon: '🎮' },
+    { id: 'giroscopio', label: 'Giroscópio', icon: '🎯' },
+    { id: 'multi',      label: 'Multi-Robô', icon: '🤖' },
+    { id: 'twin',       label: 'Twins',      icon: '🔄' },
+    { id: 'sobre',      label: 'Sobre',      icon: '📖' },
 ];
 
+// Primeiras 3 abas ficam sempre visíveis no mobile; as demais vão em "Mais"
+const NAV_VISIBLE_MOBILE = 3; // Manual | Giroscópio | Multi-Robô
+
 function App() {
-    const [currentPage,  setCurrentPage]  = useState('controle');
-    const [menuAberto,   setMenuAberto]   = useState(false);
-    const [userRobotId,  setUserRobotId]  = useState(
+    const [currentPage, setCurrentPage] = useState('controle');
+    const [maisAberto,  setMaisAberto]  = useState(false);
+    const [userRobotId, setUserRobotId] = useState(
         () => localStorage.getItem('digitalTwinRobotId') || 'robo1'
     );
 
@@ -33,179 +36,144 @@ function App() {
         || 'wss://bfea296c.ala.us-east-1.emqxsl.com:8084/mqtt';
     const { isConnected, status, robotsPose } = useMQTT(brokerUrl);
 
-    const trocarPagina = (id) => {
-        setCurrentPage(id);
-        setMenuAberto(false);
-    };
+    const trocarPagina = (id) => { setCurrentPage(id); setMaisAberto(false); };
+    const salvarRobo   = (id) => { setUserRobotId(id); localStorage.setItem('digitalTwinRobotId', id); };
 
-    const salvarRobo = (id) => {
-        setUserRobotId(id);
-        localStorage.setItem('digitalTwinRobotId', id);
-    };
+    useEffect(() => { console.log('🚀 App | Broker:', brokerUrl); }, [brokerUrl]);
 
+    // Fecha dropdown ao clicar fora
     useEffect(() => {
-        console.log('🚀 App iniciado | Broker:', brokerUrl);
-    }, [brokerUrl]);
-
-    // Fecha menu ao clicar fora
-    useEffect(() => {
-        if (!menuAberto) return;
-        const fechar = () => setMenuAberto(false);
+        if (!maisAberto) return;
+        const fechar = () => setMaisAberto(false);
         document.addEventListener('click', fechar);
         return () => document.removeEventListener('click', fechar);
-    }, [menuAberto]);
+    }, [maisAberto]);
 
     const renderPage = () => {
         switch (currentPage) {
             case 'controle':
                 return (
-                    <div className="page-container animate-fadeIn w-full flex flex-col items-center">
-                        <main className="flex justify-center items-center flex-col py-10 px-4 sm:px-6 mt-4 w-full bg-white/95 backdrop-blur-sm border-2 border-amber-200/50 max-w-[1100px] rounded-3xl shadow-2xl shadow-amber-500/10">
-                            {/* Controle já embute Musicas e Coreografia internamente */}
-                            <Controle
-                                robotsPose={robotsPose}
-                                id_robo={userRobotId}
-                                onRobotIdChange={salvarRobo}
-                            />
+                    <div className="animate-fadeIn w-full flex flex-col items-center">
+                        <main className="flex justify-center items-center flex-col py-10 px-4 sm:px-6 mt-4 w-full
+                                         bg-white/95 backdrop-blur-sm border border-[#f62681]/20
+                                         max-w-[1100px] rounded-3xl shadow-2xl shadow-[#f62681]/10">
+                            <Controle robotsPose={robotsPose} id_robo={userRobotId} onRobotIdChange={salvarRobo} />
                         </main>
                     </div>
                 );
             case 'giroscopio':
-                return (
-                    <div className="page-container animate-fadeIn">
-                        <ControleGiroscopio
-                            robotsPose={robotsPose}
-                            id_robo={userRobotId}
-                            onRobotIdChange={salvarRobo}
-                        />
-                    </div>
-                );
+                return <div className="animate-fadeIn"><ControleGiroscopio robotsPose={robotsPose} id_robo={userRobotId} onRobotIdChange={salvarRobo} /></div>;
             case 'multi':
-                return (
-                    <div className="page-container animate-fadeIn">
-                        <ControleMultiRobo robotsPose={robotsPose} mqttOnline={isConnected} />
-                    </div>
-                );
+                return <div className="animate-fadeIn"><ControleMultiRobo robotsPose={robotsPose} mqttOnline={isConnected} /></div>;
             case 'twin':
-                return (
-                    <div className="page-container animate-fadeIn">
-                        <DigitalTwin
-                            robotsPose={robotsPose}
-                            mqttOnline={isConnected}
-                            id_robo={userRobotId}
-                            onRobotIdChange={salvarRobo}
-                        />
-                    </div>
-                );
+                return <div className="animate-fadeIn"><DigitalTwin robotsPose={robotsPose} mqttOnline={isConnected} id_robo={userRobotId} onRobotIdChange={salvarRobo} /></div>;
             case 'sobre':
-                return (
-                    <div className="page-container animate-fadeIn">
-                        <Sobre />
-                    </div>
-                );
+                return <div className="animate-fadeIn"><Sobre /></div>;
             default:
                 return null;
         }
     };
 
+    const navPrimarios  = NAV_ITEMS.slice(0, NAV_VISIBLE_MOBILE);
+    const navSecundarios = NAV_ITEMS.slice(NAV_VISIBLE_MOBILE);
+    const maisAtivo = navSecundarios.some(i => i.id === currentPage);
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#f62681] via-[#f62681]/90 to-[#fffaec]">
+        <div className="min-h-screen bg-gradient-to-br from-[#f62681] via-[#e8197a] to-[#fdf2f8]">
 
-            {/* ── Badge de status (fixo, canto superior direito) ────────────── */}
-            <div className={`fixed top-3 right-3 z-50 px-3 py-1.5 rounded-2xl text-xs font-bold shadow-xl backdrop-blur-md transition-all duration-500 ${
-                isConnected
-                    ? 'bg-emerald-500/90 text-white shadow-emerald-500/30'
-                    : 'bg-rose-500/90 text-white shadow-rose-500/30'
-            }`}>
-                <div className="flex items-center gap-1.5">
-                    <span className={`inline-block w-2 h-2 rounded-full animate-pulse ${isConnected ? 'bg-white' : 'bg-white/50'}`} />
-                    {isConnected ? '🚀 Online' : '⚠️ Offline'}
-                    {status && <span className="ml-1 opacity-70">({status})</span>}
-                </div>
-            </div>
+            {/* ── HEADER ─────────────────────────────────────────────────────── */}
+            <header className="sticky top-0 z-40 bg-white/96 backdrop-blur-md border-b border-[#f62681]/15 shadow-sm">
 
-            {/* ── Header ──────────────────────────────────────────────────────── */}
-            <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-amber-200/30 shadow-sm">
-                <nav className="flex items-center justify-between px-4 py-2 max-w-7xl mx-auto gap-3">
-
+                {/* Badge status — integrado ao header, não flutua sobre o conteúdo */}
+                <div className="flex items-center justify-between px-4 pt-2 pb-0 max-w-7xl mx-auto">
                     {/* Logo */}
-                    <button
-                        onClick={() => trocarPagina('controle')}
-                        className="flex items-center gap-2 shrink-0 group"
-                    >
-                        <img
-                            src={Logo}
-                            alt="Logo 10 Dimensões"
-                            className="w-10 h-10 sm:w-12 sm:h-12 object-contain drop-shadow-md group-hover:drop-shadow-xl transition-all"
-                        />
-                        <span className="hidden sm:block text-base font-bold bg-gradient-to-r from-[#f62681] to-[#F68621] bg-clip-text text-transparent whitespace-nowrap">
+                    <button onClick={() => trocarPagina('controle')} className="flex items-center gap-2 shrink-0 group">
+                        <img src={Logo} alt="10 Dimensões" className="w-9 h-9 sm:w-11 sm:h-11 object-contain drop-shadow group-hover:drop-shadow-lg transition-all" />
+                        <span className="hidden sm:block text-base font-bold text-[#f62681] whitespace-nowrap">
                             10 Dimensões
                         </span>
                     </button>
 
-                    {/* Menu desktop — visível em telas md+ */}
-                    <div className="hidden md:flex items-center gap-1 bg-amber-50/50 p-1 rounded-2xl border border-amber-200/30 flex-wrap justify-center">
+                    {/* Status badge — alinhado à direita, nunca sobrepõe nada */}
+                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all duration-500 ${
+                        isConnected
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : 'bg-rose-50 text-rose-600 border-rose-200'
+                    }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-rose-400'}`} />
+                        {isConnected ? 'Online' : 'Offline'}
+                        {status && <span className="opacity-60 hidden sm:inline">· {status}</span>}
+                    </div>
+                </div>
+
+                {/* ── NAV DESKTOP (md+) ──────────────────────────────────────── */}
+                <nav className="hidden md:flex justify-center px-4 pb-2 pt-1.5">
+                    <div className="flex items-center gap-1 bg-[#fdf2f8] p-1 rounded-2xl border border-[#f62681]/15">
                         {NAV_ITEMS.map((item) => (
                             <button
                                 key={item.id}
                                 onClick={() => trocarPagina(item.id)}
-                                className={`
-                                    px-3 py-1.5 rounded-xl text-sm font-medium transition-all duration-300
-                                    flex items-center gap-1.5 whitespace-nowrap
-                                    ${currentPage === item.id
-                                        ? 'text-white shadow-md'
-                                        : 'text-amber-800/70 hover:text-amber-800 hover:bg-amber-100/50'
-                                    }
-                                `}
-                                style={{
-                                    background: currentPage === item.id
-                                        ? 'linear-gradient(135deg, #f62681, #F68621)'
-                                        : 'transparent',
-                                }}
+                                className={`px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center gap-1.5 whitespace-nowrap ${
+                                    currentPage === item.id
+                                        ? 'bg-[#f62681] text-white shadow-md shadow-[#f62681]/30'
+                                        : 'text-[#f62681]/70 hover:text-[#f62681] hover:bg-[#f62681]/10'
+                                }`}
                             >
                                 <span>{item.icon}</span>
                                 <span>{item.label}</span>
                             </button>
                         ))}
                     </div>
+                </nav>
 
-                    {/* Menu hamburguer — visível apenas em mobile (< md) */}
-                    <div className="relative md:hidden">
+                {/* ── NAV MOBILE (< md) — tab bar centralizada ───────────────── */}
+                <nav className="md:hidden flex items-center justify-center px-2 pb-2 pt-1 gap-1">
+                    {/* Abas primárias */}
+                    {navPrimarios.map((item) => (
                         <button
-                            onClick={(e) => { e.stopPropagation(); setMenuAberto(v => !v); }}
-                            className="flex flex-col justify-center items-center w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 gap-1.5 transition-all hover:bg-amber-100"
-                            aria-label="Abrir menu"
+                            key={item.id}
+                            onClick={() => trocarPagina(item.id)}
+                            className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all duration-200 flex-1 max-w-[80px] ${
+                                currentPage === item.id
+                                    ? 'bg-[#f62681] text-white shadow-md shadow-[#f62681]/30'
+                                    : 'text-[#f62681]/60 hover:text-[#f62681] hover:bg-[#f62681]/10'
+                            }`}
                         >
-                            <span className={`block w-5 h-0.5 bg-amber-800 rounded transition-all duration-300 ${menuAberto ? 'rotate-45 translate-y-2' : ''}`} />
-                            <span className={`block w-5 h-0.5 bg-amber-800 rounded transition-all duration-300 ${menuAberto ? 'opacity-0' : ''}`} />
-                            <span className={`block w-5 h-0.5 bg-amber-800 rounded transition-all duration-300 ${menuAberto ? '-rotate-45 -translate-y-2' : ''}`} />
+                            <span className="text-base leading-none">{item.icon}</span>
+                            <span className="leading-tight truncate">{item.label}</span>
+                        </button>
+                    ))}
+
+                    {/* Botão "Mais" — dropdown para abas secundárias */}
+                    <div className="relative flex-1 max-w-[80px]">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setMaisAberto(v => !v); }}
+                            className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all duration-200 w-full ${
+                                maisAtivo || maisAberto
+                                    ? 'bg-[#f62681] text-white shadow-md shadow-[#f62681]/30'
+                                    : 'text-[#f62681]/60 hover:text-[#f62681] hover:bg-[#f62681]/10'
+                            }`}
+                        >
+                            <span className="text-base leading-none">⋯</span>
+                            <span className="leading-tight">Mais</span>
                         </button>
 
-                        {/* Dropdown mobile */}
-                        {menuAberto && (
+                        {maisAberto && (
                             <div
-                                className="absolute right-0 top-12 w-52 bg-white/95 backdrop-blur-md border border-amber-200/50 rounded-2xl shadow-2xl shadow-amber-500/20 overflow-hidden animate-fadeIn z-50"
+                                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-44 bg-white border border-[#f62681]/20 rounded-2xl shadow-2xl shadow-[#f62681]/15 overflow-hidden animate-fadeIn z-50"
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                {NAV_ITEMS.map((item) => (
+                                {navSecundarios.map((item) => (
                                     <button
                                         key={item.id}
                                         onClick={() => trocarPagina(item.id)}
-                                        className={`
-                                            w-full flex items-center gap-3 px-4 py-3 text-sm font-medium
-                                            transition-all duration-200 border-b border-amber-100/50 last:border-0
-                                            ${currentPage === item.id
-                                                ? 'text-white'
-                                                : 'text-amber-900 hover:bg-amber-50'
-                                            }
-                                        `}
-                                        style={{
-                                            background: currentPage === item.id
-                                                ? 'linear-gradient(135deg, #f62681, #F68621)'
-                                                : undefined,
-                                        }}
+                                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold transition-all border-b border-[#f62681]/10 last:border-0 ${
+                                            currentPage === item.id
+                                                ? 'bg-[#f62681] text-white'
+                                                : 'text-[#f62681]/80 hover:bg-[#fdf2f8]'
+                                        }`}
                                     >
-                                        <span className="text-base">{item.icon}</span>
+                                        <span>{item.icon}</span>
                                         <span>{item.label}</span>
                                     </button>
                                 ))}
@@ -215,43 +183,33 @@ function App() {
                 </nav>
             </header>
 
-            {/* ── Conteúdo principal ──────────────────────────────────────────── */}
+            {/* ── CONTEÚDO ───────────────────────────────────────────────────── */}
             <main className="flex flex-col items-center px-3 sm:px-4 py-6 max-w-7xl mx-auto">
                 {renderPage()}
             </main>
 
-            {/* ── Footer ──────────────────────────────────────────────────────── */}
-            <footer className="mt-16 bg-white/80 backdrop-blur-md border-t border-amber-200/30">
-                <div className="flex flex-col items-center px-4 py-8 max-w-7xl mx-auto gap-6">
-
-                    {/* Logos parceiros */}
+            {/* ── FOOTER ─────────────────────────────────────────────────────── */}
+            <footer className="mt-16 bg-white/85 backdrop-blur-md border-t border-[#f62681]/15">
+                <div className="flex flex-col items-center px-4 py-8 max-w-7xl mx-auto gap-5">
                     <div className="flex flex-wrap items-center justify-center gap-6 w-full">
-                        <img src={Logo}  className="h-12 w-auto object-contain opacity-80" alt="10 Dimensões" />
-                        <div className="hidden sm:block w-px h-10 bg-amber-200/50" />
-                        <img src={Lance} className="h-10 w-auto object-contain opacity-80" alt="Lance" />
-                        <div className="hidden sm:block w-px h-10 bg-amber-200/50" />
-                        <img src={UFRN}  className="h-10 w-auto object-contain opacity-80" alt="UFRN" />
+                        <img src={Logo}  className="h-11 w-auto object-contain opacity-80" alt="10 Dimensões" />
+                        <div className="hidden sm:block w-px h-9 bg-[#f62681]/20" />
+                        <img src={Lance} className="h-9 w-auto object-contain opacity-75" alt="Lance" />
+                        <div className="hidden sm:block w-px h-9 bg-[#f62681]/20" />
+                        <img src={UFRN}  className="h-9 w-auto object-contain opacity-75" alt="UFRN" />
                     </div>
-
-                    {/* Redes sociais */}
                     <div className="flex gap-5">
-                        <a href="https://www.facebook.com/10dimensoes/" target="_blank" rel="noopener noreferrer"
-                           className="hover:scale-110 transition-transform duration-300">
-                            <img src={Facebook}  className="h-8 w-auto opacity-70 hover:opacity-100 transition-opacity" alt="Facebook" />
+                        <a href="https://www.facebook.com/10dimensoes/" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition-transform">
+                            <img src={Facebook}  className="h-7 w-auto opacity-60 hover:opacity-100 transition-opacity" alt="Facebook" />
                         </a>
-                        <a href="https://www.instagram.com/10dimensoes/" target="_blank" rel="noopener noreferrer"
-                           className="hover:scale-110 transition-transform duration-300">
-                            <img src={Instagram} className="h-8 w-auto opacity-70 hover:opacity-100 transition-opacity" alt="Instagram" />
+                        <a href="https://www.instagram.com/10dimensoes/" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition-transform">
+                            <img src={Instagram} className="h-7 w-auto opacity-60 hover:opacity-100 transition-opacity" alt="Instagram" />
                         </a>
-                        <a href="https://x.com/10dimensoes" target="_blank" rel="noopener noreferrer"
-                           className="hover:scale-110 transition-transform duration-300">
-                            <img src={Twitter}   className="h-8 w-auto opacity-70 hover:opacity-100 transition-opacity" alt="Twitter" />
+                        <a href="https://x.com/10dimensoes" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition-transform">
+                            <img src={Twitter}   className="h-7 w-auto opacity-60 hover:opacity-100 transition-opacity" alt="Twitter" />
                         </a>
                     </div>
-
-                    <p className="text-xs text-amber-800/40">
-                        © 2026 10 Dimensões · Todos os direitos reservados
-                    </p>
+                    <p className="text-xs text-[#f62681]/40">© 2026 10 Dimensões · Todos os direitos reservados</p>
                 </div>
             </footer>
         </div>

@@ -1,12 +1,13 @@
+/* ── Mini-mapa — paleta 100% rosa ─────────────────────────────────────────── */
 .mini-map-card {
   width: 100%;
   max-width: 480px;
   margin: 20px auto 0;
   padding: clamp(14px, 3vw, 22px);
-  border: 4px solid #f68621;
-  border-radius: 22px;
+  border: 2px solid rgba(246,38,129,.20);
+  border-radius: 20px;
   background: #fff;
-  box-shadow: 0 12px 30px rgba(86, 31, 0, .14);
+  box-shadow: 0 10px 28px rgba(246,38,129,.10);
   box-sizing: border-box;
 }
 
@@ -20,8 +21,8 @@
 }
 .mini-map-heading h2 {
   margin: 0;
-  color: #461c04;
-  font-size: clamp(1rem, 3vw, 1.25rem);
+  color: #9d174d;
+  font-size: clamp(1rem, 3vw, 1.15rem);
   font-weight: 800;
 }
 
@@ -29,114 +30,108 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #7c2d12;
+  color: rgba(246,38,129,.60);
   font-size: .72rem;
   font-weight: 700;
   white-space: nowrap;
 }
-.mini-mqtt-indicator i { width: 8px; height: 8px; border-radius: 50%; background: #d97706; flex-shrink: 0; }
+.mini-mqtt-indicator i {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(246,38,129,.40);
+  flex-shrink: 0;
+}
 .mini-mqtt-indicator.is-online { color: #167c3e; }
-.mini-mqtt-indicator.is-online i { background: #22c55e; box-shadow: 0 0 0 4px rgba(34, 197, 94, .16); }
+.mini-mqtt-indicator.is-online i {
+  background: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34,197,94,.16);
+}
 
 .mini-floor-map {
   position: relative;
   isolation: isolate;
   width: 100%;
-  /* Mapa sempre quadrado, proporcional à largura do container: escala em
-     qualquer tela sem precisar de media queries. */
   aspect-ratio: 1 / 1;
   overflow: hidden;
-  border: 2px solid #d9a76e;
-  border-radius: 16px;
-  background-color: #f8e7c5;
+  border: 1.5px solid rgba(246,38,129,.18);
+  border-radius: 14px;
+  background-color: #fdf2f8;
   background-image:
-    linear-gradient(rgba(170, 112, 45, .18) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(170, 112, 45, .18) 1px, transparent 1px);
+    linear-gradient(rgba(246,38,129,.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(246,38,129,.08) 1px, transparent 1px);
   background-size: 12.5% 12.5%;
 }
 .mini-floor-map::before,
 .mini-floor-map::after {
-  position: absolute;
-  z-index: 0;
-  content: '';
-  background: rgba(122, 73, 24, .4);
+  position: absolute; z-index: 0; content: '';
+  background: rgba(246,38,129,.25);
 }
 .mini-floor-map::before { top: 50%; right: 0; left: 0; height: 1px; }
-.mini-floor-map::after { top: 0; bottom: 0; left: 50%; width: 1px; }
+.mini-floor-map::after  { top: 0; bottom: 0; left: 50%; width: 1px; }
 
 .mini-floor-origin {
   position: absolute;
-  top: calc(50% + 4px);
-  left: calc(50% + 4px);
+  top: calc(50% + 4px); left: calc(50% + 4px);
   z-index: 0;
-  color: #7c4a1a;
-  font-size: .62rem;
+  color: rgba(246,38,129,.50);
+  font-size: .58rem;
   font-weight: 700;
 }
 
 .mini-empty-message {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  display: grid;
-  gap: 4px;
+  top: 50%; left: 50%;
+  display: grid; gap: 4px;
   width: min(220px, 82%);
   transform: translate(-50%, -50%);
   padding: 12px;
-  border: 1px solid rgba(180, 107, 33, .35);
+  border: 1px solid rgba(246,38,129,.20);
   border-radius: 12px;
-  background: rgba(255, 253, 247, .85);
+  background: rgba(253,242,248,.90);
   text-align: center;
-  color: #6a3e16;
+  color: rgba(157,23,77,.70);
   font-size: .78rem;
 }
 .mini-empty-message span { font-size: 1.4rem; }
 
-.mini-robot-marker {
-  position: absolute;
-  z-index: 1;
-}
+.mini-robot-marker { position: absolute; z-index: 1; }
 
 .mini-robot-body {
-  display: grid;
-  place-items: center;
-  /* clamp em vw: continua fluido em qualquer tela, sem depender de % aninhado */
+  display: grid; place-items: center;
   width: clamp(20px, 7vw, 34px);
   height: clamp(20px, 7vw, 34px);
   border: 2px solid #fff;
   background: var(--robot-color);
-  box-shadow: 0 4px 10px rgba(91, 13, 43, .32);
+  box-shadow: 0 3px 8px rgba(246,38,129,.28);
   transition: left .3s ease, top .3s ease, transform .3s ease;
 }
 
 .mini-robot-marker.is-selected .mini-robot-body {
   border-color: #f62681;
   border-width: 3px;
-  box-shadow: 0 0 0 4px rgba(246, 38, 129, .25), 0 4px 10px rgba(91, 13, 43, .32);
+  box-shadow: 0 0 0 4px rgba(246,38,129,.20), 0 3px 8px rgba(246,38,129,.28);
 }
 
 .mini-robot-arrow { color: #fff; font-size: .65rem; line-height: 1; }
 
 .mini-robot-label {
   position: absolute;
-  top: calc(50% + 3px);
-  left: 0;
+  top: calc(50% + 3px); left: 0;
   transform: translateX(-50%);
-  margin-top: 3px;
-  padding: 1px 5px;
+  margin-top: 3px; padding: 1px 5px;
   border-radius: 99px;
-  background: #461c04;
+  background: #9d174d;
   color: #fff;
-  font-size: .6rem;
-  font-weight: 800;
+  font-size: .58rem; font-weight: 800;
   white-space: nowrap;
 }
 
-.mini-robot-shape-circle { border-radius: 50%; }
-.mini-robot-shape-square { border-radius: 8%; }
-.mini-robot-shape-triangle { clip-path: polygon(50% 0, 100% 100%, 0 100%); border-radius: 0; }
-.mini-robot-shape-diamond { clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); border-radius: 0; }
-.mini-robot-shape-hexagon { clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0 50%); border-radius: 0; }
-.mini-robot-shape-pentagon { clip-path: polygon(50% 0, 100% 38%, 81% 100%, 19% 100%, 0 38%); border-radius: 0; }
-.mini-robot-shape-star { clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 94%, 50% 72%, 21% 94%, 32% 57%, 2% 35%, 39% 35%); border-radius: 0; }
-.mini-robot-shape-octagon { clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); border-radius: 0; }
+/* Formas */
+.mini-robot-shape-circle   { border-radius: 50%; }
+.mini-robot-shape-square   { border-radius: 8%; }
+.mini-robot-shape-triangle { clip-path: polygon(50% 0,100% 100%,0 100%); border-radius:0; }
+.mini-robot-shape-diamond  { clip-path: polygon(50% 0,100% 50%,50% 100%,0 50%); border-radius:0; }
+.mini-robot-shape-hexagon  { clip-path: polygon(25% 6%,75% 6%,100% 50%,75% 94%,25% 94%,0 50%); border-radius:0; }
+.mini-robot-shape-pentagon { clip-path: polygon(50% 0,100% 38%,81% 100%,19% 100%,0 38%); border-radius:0; }
+.mini-robot-shape-star     { clip-path: polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 94%,50% 72%,21% 94%,32% 57%,2% 35%,39% 35%); border-radius:0; }
+.mini-robot-shape-octagon  { clip-path: polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%); border-radius:0; }
