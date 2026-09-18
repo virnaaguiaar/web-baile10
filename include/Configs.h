@@ -20,7 +20,7 @@ const char *host = "Carrinho";
 
 // ID único do robô - gravado na EEPROM
 #define ID_ROBO 0
-char id_robo[16] = "robo1"; // Alterar a medida que troca de robo
+char id_robo[16] = "robo2"; // Alterar a medida que troca de robo
 
 // Configurações MQTT
 WebSocketsClient webSocket;
@@ -52,7 +52,7 @@ const float DIST_POR_PULSO = CIRCUNF_RODAS / PULSOS_POR_REV;
 #define DIST_PER_PULSE DIST_POR_PULSO
 
 // IDs / nomes do robô
-#define robotId id_robo
+#define id_robo id_robo
 
 // Variáveis de odometria / pose
 #define robotX roboX
@@ -115,8 +115,8 @@ const int motor2Pin2 = 33;
 const int sda_gyro = 21;
 const int slc_gyro = 22;
 // MP3
-static const uint8_t MP3_TX = 12;
-static const uint8_t MP3_RX = 13;
+static const uint8_t MP3_TX = 16;
+static const uint8_t MP3_RX = 17;
 
 const int srclk = 23;
 const int rclk = 19;

@@ -408,7 +408,7 @@ void curvaSudesteDT(int timer) {
     para();
 }
 
-void desenharTrianguloEquilatero(float lado=1.0){
+void desenharTrianguloEquilatero(float lado=0.6){
     Serial.println("🔺 Desenhando triângulo equilátero...");
 
     resetarOdometria();
@@ -419,7 +419,7 @@ void desenharTrianguloEquilatero(float lado=1.0){
     }
     Serial.println("✅ Triângulo feito!");
 }
-void desenharQuadrado(float lado = 1.0){
+void desenharQuadrado(float lado = 0.6){
     Serial.println("🔲 Desenhando quadrado...");
 
     resetarOdometria();
@@ -431,7 +431,7 @@ void desenharQuadrado(float lado = 1.0){
     Serial.println("✅ Quadrado feito!");
 }
 
-void desenharCoracao(float tamanho = 1.0) {
+void desenharCoracao(float tamanho = 0.6) {
     Serial.println("❤️ Desenhando coração...");
     resetarOdometria();
     

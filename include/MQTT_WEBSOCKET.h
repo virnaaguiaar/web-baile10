@@ -19,22 +19,24 @@ extern char id_robo[];
 extern float roboX, roboY, roboTheta;
 
 // Variáveis estáticas adicionais
-static unsigned long ultimoPing = 0;
-static unsigned long ultimaPosePublish = 0;
-static unsigned long ultimoStatusPublish = 0;
-static unsigned long ultima_checagem_desvio = 0;
-static const unsigned long INTERVALO_PING_MS = 30000;
-static const unsigned long INTERVALO_POSE_PUBLISH_MS = 100;      // 10Hz
-static const unsigned long INTERVALO_STATUS_PUBLISH_MS = 5000;   // 5 segundos
-static const unsigned long INTERVALO_CHECAGEM_DESVIO_MS = 50;    // 20Hz
+static unsigned long ultimoPing              = 0;
+static unsigned long ultimaPosePublish       = 0;
+static unsigned long ultimoStatusPublish     = 0;
+static unsigned long ultima_checagem_desvio  = 0;
+static const unsigned long INTERVALO_PING_MS              = 30000;
+static const unsigned long INTERVALO_POSE_PUBLISH_MS      = 100;   // 10 Hz
+static const unsigned long INTERVALO_STATUS_PUBLISH_MS    = 5000;  // 5 s
+static const unsigned long INTERVALO_CHECAGEM_DESVIO_MS   = 50;    // 20 Hz
 
 static bool autonomo_disponivel = false;
-static int auto_alvoX = 0, auto_alvoY = 0;
+static int  auto_alvoX = 0, auto_alvoY = 0;
 
 // Forward declarations
 void coreo();
 
-// Função para publicar MQTT
+// ============================================================
+// Publica uma mensagem MQTT via WebSocket
+// ============================================================
 void publicarMQTT(const char* topico, const char* mensagem) {
     if (!mqttConnected) return;
 
@@ -43,7 +45,7 @@ void publicarMQTT(const char* topico, const char* mensagem) {
 
     pacote[pos++] = 0x30; // PUBLISH QoS 0
 
-    int topico_tamanho = strlen(topico);
+    int topico_tamanho   = strlen(topico);
     int mensagem_tamanho = strlen(mensagem);
     int restante_tamanho = 2 + topico_tamanho + mensagem_tamanho;
 
@@ -58,10 +60,8 @@ void publicarMQTT(const char* topico, const char* mensagem) {
 
     pacote[pos++] = (topico_tamanho >> 8) & 0xFF;
     pacote[pos++] = topico_tamanho & 0xFF;
-
     memcpy(pacote + pos, topico, topico_tamanho);
     pos += topico_tamanho;
-
     memcpy(pacote + pos, mensagem, mensagem_tamanho);
     pos += mensagem_tamanho;
 
@@ -73,9 +73,7 @@ static int escreverTamanhoRestante(uint8_t* buffer, int tamanho) {
     do {
         uint8_t byteCodificado = tamanho % 128;
         tamanho = tamanho / 128;
-        if (tamanho > 0) {
-            byteCodificado |= 0x80;
-        }
+        if (tamanho > 0) byteCodificado |= 0x80;
         buffer[indice++] = byteCodificado;
     } while (tamanho > 0);
     return indice;
@@ -102,24 +100,16 @@ static void enviarMQTTConnect() {
     mensagem[indice_mensagem++] = 0x04;
     uint8_t flags_conectadas = 0x02;
     bool comUsuario = (mqtt_user != NULL && strlen(mqtt_user) > 0);
-    bool comSenha = (mqtt_password != NULL && strlen(mqtt_password) > 0);
-    if (comUsuario) {
-        flags_conectadas = flags_conectadas | 0x80;
-    }
-    if (comSenha) {
-        flags_conectadas = flags_conectadas | 0x40;
-    }
+    bool comSenha   = (mqtt_password != NULL && strlen(mqtt_password) > 0);
+    if (comUsuario) flags_conectadas |= 0x80;
+    if (comSenha)   flags_conectadas |= 0x40;
 
     mensagem[indice_mensagem++] = flags_conectadas;
     mensagem[indice_mensagem++] = 0x00;
     mensagem[indice_mensagem++] = 0x3C;
     indice_mensagem += escreverStringMQTT(mensagem + indice_mensagem, id_clt);
-    if (comUsuario) {
-        indice_mensagem += escreverStringMQTT(mensagem + indice_mensagem, mqtt_user);
-    }
-    if (comSenha) {
-        indice_mensagem += escreverStringMQTT(mensagem + indice_mensagem, mqtt_password);
-    }
+    if (comUsuario) indice_mensagem += escreverStringMQTT(mensagem + indice_mensagem, mqtt_user);
+    if (comSenha)   indice_mensagem += escreverStringMQTT(mensagem + indice_mensagem, mqtt_password);
 
     uint8_t header_fixo[5];
     header_fixo[0] = 0x10;
@@ -128,7 +118,6 @@ static void enviarMQTTConnect() {
     uint8_t pacote[300];
     memcpy(pacote, header_fixo, 1 + tamanho_tamanho_restante);
     memcpy(pacote + 1 + tamanho_tamanho_restante, mensagem, indice_mensagem);
-
     webSocket.sendBIN(pacote, 1 + tamanho_tamanho_restante + indice_mensagem);
 }
 
@@ -210,6 +199,15 @@ void processarMQTTComando(const String& mensagem) {
         return;
     }
 
+    // ===== VOLUME MP3 =====
+    // FIX: handler para DN0VOL<0-30>, enviado pelo musicas.jsx antes de tocar
+    else if (mensagem.startsWith("DN0VOL")) {
+        int vol = mensagem.substring(6).toInt();
+        mp3SetVolume(vol);
+        Serial.printf("🔊 Volume ajustado para: %d\n", vol);
+        return;
+    }
+
     // ===== MÚSICAS =====
     else if (mensagem.startsWith("DN0CM")) {
         int musicaId = mensagem.substring(5).toInt();
@@ -226,7 +224,6 @@ void processarMQTTComando(const String& mensagem) {
         if (coreografiaEmExecucao) {
             pararCoreografia();
         }
-
         autonomo_disponivel = false;
 
         int xPos = mensagem.indexOf('X');
@@ -245,7 +242,7 @@ void processarMQTTComando(const String& mensagem) {
 
     // ===== COMANDOS GEOMÉTRICOS =====
     else if (mensagem.startsWith("DN0QUADRD")) {
-        float lado = (mensagem.length() > 6) ? mensagem.substring(8).toFloat() : 0.5;
+        float lado = (mensagem.length() > 9) ? mensagem.substring(9).toFloat() : 0.8f;
         desenharQuadrado(lado);
         char buffer[30];
         sprintf(buffer, "Quadrado %.2fm", lado);
@@ -253,7 +250,7 @@ void processarMQTTComando(const String& mensagem) {
         return;
     }
     else if (mensagem.startsWith("DN0TRIANG")) {
-        float lado = (mensagem.length() > 6) ? mensagem.substring(8).toFloat() : 0.5;
+        float lado = (mensagem.length() > 9) ? mensagem.substring(9).toFloat() : 0.8f;
         desenharTrianguloEquilatero(lado);
         char buffer[30];
         sprintf(buffer, "Triângulo %.2fm", lado);
@@ -261,7 +258,7 @@ void processarMQTTComando(const String& mensagem) {
         return;
     }
     else if (mensagem.startsWith("DN0COR")) {
-        float tamanho = (mensagem.length() > 6) ? mensagem.substring(6).toFloat() : 0.5;
+        float tamanho = (mensagem.length() > 6) ? mensagem.substring(6).toFloat() : 0.8f;
         desenharCoracao(tamanho);
         char buffer[30];
         sprintf(buffer, "Coração %.2fm", tamanho);
@@ -269,7 +266,7 @@ void processarMQTTComando(const String& mensagem) {
         return;
     }
     else if (mensagem.startsWith("DN0FRENTEP")) {
-        float distancia = mensagem.substring(9).toFloat();
+        float distancia = mensagem.substring(10).toFloat();
         movFrentePreciso(distancia);
         char buffer[30];
         sprintf(buffer, "Andou %.2fm", distancia);
@@ -303,7 +300,7 @@ void processarMQTTComando(const String& mensagem) {
         return;
     }
 
-    // ===== OUTROS .h =====
+    // ===== OUTROS =====
     else if (mensagem.startsWith("DN0AVD")) {
         int mode = mensagem.substring(6).toInt();
         collisionAvoidance.setMode((AvoidanceMode)mode);
@@ -357,6 +354,11 @@ void processarMQTTComando(const String& mensagem) {
         Serial.println("⏹️ Modo autônomo desativado");
         return;
     }
+    else if (mensagem == "DN0RST") {
+        resetarOdometria();
+        publicarMQTT("robo/status", "Odometria resetada");
+        return;
+    }
     else if (mensagem == "DN0192") {
         Serial.println("🚨 PARADA DE EMERGÊNCIA!");
         autonomo_disponivel = false;
@@ -389,11 +391,21 @@ static void analisarMQTTPacote(uint8_t* dado, size_t tamanho) {
             if (retornarCodigo == 0x00) {
                 Serial.printf("✅ CARRINHO CONECTADO AO MQTT! ID=%s\n", id_robo);
                 mqttConnected = true;
+
+                // Tópico broadcast (todos os robôs)
                 enviarMQTTSubscribe("cmd", 1);
+
+                // Tópico individual "cmd/<id_robo>"
+                char topicoIndividual[40];
+                snprintf(topicoIndividual, sizeof(topicoIndividual), "cmd/%s", id_robo);
+                enviarMQTTSubscribe(topicoIndividual, 6);
+                Serial.printf("📥 Inscrito em tópico individual: %s\n", topicoIndividual);
+
                 enviarMQTTSubscribe("robo/pose/+", 2);
                 enviarMQTTSubscribe("robo/avoidance", 3);
                 enviarMQTTSubscribe("robo/coord_mode", 4);
                 enviarMQTTSubscribe("robo/emergencia", 5);
+
                 publicarMQTT("robo/status", "online");
                 publicarMQTT("robo/version", version);
             } else {
@@ -426,21 +438,26 @@ static void analisarMQTTPacote(uint8_t* dado, size_t tamanho) {
             if (mensagem_tamanho < 0 || pos + mensagem_tamanho > (int)tamanho) return;
             String mensagem = String((char*)(dado + pos), mensagem_tamanho);
 
+            // Broadcast para todos os robôs
             if (topico == "cmd") {
+                processarMQTTComando(mensagem);
+            }
+            // Comando individual dirigido a este robô
+            else if (topico == String("cmd/") + id_robo) {
                 processarMQTTComando(mensagem);
             }
             else if (topico.startsWith("robo/pose/")) {
                 StaticJsonDocument<512> doc;
                 DeserializationError error = deserializeJson(doc, mensagem);
                 if (!error) {
-                    String outroId = topico.substring(11);
-                    float outroX = doc["x"];
-                    float outroY = doc["y"];
+                    String outroId  = topico.substring(10);
+                    float outroX    = doc["x"];
+                    float outroY    = doc["y"];
                     float outroTheta = doc["theta"] | 0;
-                    float cov_xx = doc["cov_xx"] | 0.01f;
-                    float cov_yy = doc["cov_yy"] | 0.01f;
-                    float outroVx = doc["vx"] | 0;
-                    float outroVy = doc["vy"] | 0;
+                    float cov_xx    = doc["cov_xx"] | 0.01f;
+                    float cov_yy    = doc["cov_yy"] | 0.01f;
+                    float outroVx   = doc["vx"] | 0;
+                    float outroVy   = doc["vy"] | 0;
 
                     collisionAvoidance.updateOtherRobots(
                         outroId, outroX, outroY, outroTheta, cov_xx, cov_yy, outroVx, outroVy);
@@ -509,7 +526,7 @@ void mqttLoop() {
     unsigned long temp_atual = millis();
 
     if (mqttConnected) {
-        // Ping
+        // Ping keepalive
         if (temp_atual - ultimoPing > INTERVALO_PING_MS) {
             ultimoPing = temp_atual;
             enviarMQTTRequisicaoPing();
@@ -518,13 +535,11 @@ void mqttLoop() {
         // Publica pose do robô com covariância
         if (temp_atual - ultimaPosePublish > INTERVALO_POSE_PUBLISH_MS) {
             ultimaPosePublish = temp_atual;
-
             atualizarOdometria();
             localization.correctOdometryWithGyro();
             localization.publishPoseWithCovariance();
         }
 
-        // Verifica e evita colisões
         if (temp_atual - ultima_checagem_desvio > INTERVALO_CHECAGEM_DESVIO_MS) {
             ultima_checagem_desvio = temp_atual;
 
@@ -534,18 +549,11 @@ void mqttLoop() {
             float nearestDist;
             int riskLevel = collisionAvoidance.checkCollisionRisk(nearestDist, nearestRobot);
 
-            if (riskLevel == 2) {
+            if (riskLevel == 2 && !coreografiaEmExecucao) {
                 collisionAvoidance.emergencyStop();
                 autonomo_disponivel = false;
-            }
-            else if (!autonomo_disponivel && !coreografiaEmExecucao) {
-                int avoidX, avoidY;
-                collisionAvoidance.getAvoidanceCommand(avoidX, avoidY);
-
-                if (avoidX != 0 || avoidY != 0) {
-                    PWM_PID(avoidX, avoidY);
-                    delay(20);
-                }
+                Serial.printf("🚨 Parada de emergência: %s a %.2fm\n",
+                              nearestRobot.c_str(), nearestDist);
             }
             else if (autonomo_disponivel && !coreografiaEmExecucao) {
                 int errorX = auto_alvoX - (int)(roboX * 10);
@@ -562,7 +570,6 @@ void mqttLoop() {
 
                     int avoidX, avoidY;
                     collisionAvoidance.getAvoidanceCommand(avoidX, avoidY);
-
                     cmdX = constrain(cmdX + avoidX, -9, 9);
                     cmdY = constrain(cmdY + avoidY, -9, 9);
 
