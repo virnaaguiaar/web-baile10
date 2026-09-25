@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import mqtt from 'mqtt';
 
-const DEFAULT_BROKER   = 'wss://bfea296c.ala.us-east-1.emqxsl.com:8084/mqtt';
+const DEFAULT_BROKER   = 'wss://e2792d91.ala.us-east-1.emqxsl.com:8084/mqtt';
 const DEFAULT_USERNAME = 'baile10d';
 const DEFAULT_PASSWORD = 'Baile10D_2026!';
 

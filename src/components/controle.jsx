@@ -11,7 +11,7 @@ import Coreografia from './coreografia';
 
 function Controle({ robotsPose = {}, id_robo = 'robo1', onRobotIdChange = () => {} }) {
     const brokerUrl = process.env.REACT_APP_MQTT_BROKER
-        || 'wss://bfea296c.ala.us-east-1.emqxsl.com:8084/mqtt';
+        || 'wss://e2792d91.ala.us-east-1.emqxsl.com:8084/mqtt';
 
     const { sendCommand, isConnected } = useMQTT(brokerUrl);
     const [activeDir,   setActiveDir]   = useState(null);

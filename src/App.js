@@ -33,7 +33,7 @@ function App() {
     );
 
     const brokerUrl = process.env.REACT_APP_MQTT_BROKER
-        || 'wss://bfea296c.ala.us-east-1.emqxsl.com:8084/mqtt';
+        || 'wss://e2792d91.ala.us-east-1.emqxsl.com:8084/mqtt';
     const { isConnected, status, robotsPose } = useMQTT(brokerUrl);
 
     const trocarPagina = (id) => { setCurrentPage(id); setMaisAberto(false); };
