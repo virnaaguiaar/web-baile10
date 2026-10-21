@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Paleta rosa — única cor de destaque do projeto ──────────────────────── */
+:root {
+  --pink: #f62681;
+  --pink-light: #fdf2f8;
+  --pink-mid: #fce7f3;
+  --pink-dark: #be185d;
+  --green-mid: #11813a;
+  --red: #c01919;
+}
+
+/* ── Animações ─────────────────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 18px rgba(246,38,129,.15); }
+  50%       { box-shadow: 0 0 36px rgba(246,38,129,.30); }
+}
+
+.animate-fadeIn  { animation: fadeIn  .45s ease-out forwards; }
+.animate-slideIn { animation: slideIn .35s ease-out forwards; }
+.animate-float   { animation: float   4s  ease-in-out infinite; }
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(246,38,129,.05); border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: #f62681; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #be185d; }
+
+/* ── Glass card ─────────────────────────────────────────────────────────────── */
+.glass-card {
+  background: rgba(255,255,255,.90);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(246,38,129,.12);
+  box-shadow: 0 8px 32px rgba(246,38,129,.08);
+}
+
+/* ── Botões rosa ────────────────────────────────────────────────────────────── */
+.btn-pink {
+  background: #f62681;
+  color: #fff;
+  transition: all .25s ease;
+  box-shadow: 0 4px 14px rgba(246,38,129,.30);
+}
+.btn-pink:hover  { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 26px rgba(246,38,129,.40); }
+.btn-pink:active { transform: translateY(0) scale(.98); }
+
+.btn-pink-outline {
+  background: transparent;
+  color: #f62681;
+  border: 2px solid #f62681;
+  transition: all .25s ease;
+}
+.btn-pink-outline:hover {
+  background: #f62681;
+  color: #fff;
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(246,38,129,.30);
+}
+
+/* ── Inputs ─────────────────────────────────────────────────────────────────── */
+.input-modern {
+  background: rgba(255,255,255,.85);
+  border: 2px solid rgba(246,38,129,.18);
+  border-radius: 12px;
+  padding: 10px 16px;
+  transition: all .25s ease;
+}
+.input-modern:focus {
+  outline: none;
+  border-color: #f62681;
+  box-shadow: 0 0 0 4px rgba(246,38,129,.12);
+  background: #fff;
+}
+
+/* ── Range slider — rosa ────────────────────────────────────────────────────── */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #f62681, #e8197a);
+  outline: none;
+  transition: all .25s ease;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #f62681;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(246,38,129,.40);
+  transition: all .25s ease;
+}
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.18); box-shadow: 0 4px 18px rgba(246,38,129,.50); }
+input[type="range"]::-moz-range-thumb {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #f62681;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(246,38,129,.40);
+}
+
+/* ── Utilitários ────────────────────────────────────────────────────────────── */
+.text-gradient-pink {
+  background: linear-gradient(135deg, #f62681, #e8197a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.shadow-pink  { box-shadow: 0 0 36px rgba(246,38,129,.14); }
+.shadow-pink-lg { box-shadow: 0 0 56px rgba(246,38,129,.20); }
+
+/* ── Responsivo ─────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .glass-card { backdrop-filter: blur(8px); }
+}
