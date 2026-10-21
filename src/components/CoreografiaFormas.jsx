@@ -319,7 +319,7 @@ function ModalInfo({ forma, lado, onClose }) {
 // ─── Componente principal ────────────────────────────────────────────────────
 export default function CoreografiaFormas({ robotsPose = {}, id_robo = 'robo1', onRobotIdChange = () => {} }) {
   const brokerUrl = process.env.REACT_APP_MQTT_BROKER
-    || 'wss://e69691e1.ala.eu-central-1.emqxsl.com:8084/mqtt';
+    || 'wss://f827c8d7.ala.us-east-1.emqxsl.com:8084/mqtt';
 
   const { sendCommand, isConnected } = useMQTT(brokerUrl);
 
