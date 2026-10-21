@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
  
-const BROKER = 'e2792d91.ala.us-east-1.emqxsl.com';
+const BROKER = 'e69691e1.ala.eu-central-1.emqxsl.com';
 const URL_WSS = `wss://${BROKER}:8084/mqtt`;
 const URL_WS  = `ws://${BROKER}:8083/mqtt`;
 const URL_HTTPS = `https://${BROKER}`;

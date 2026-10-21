@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import useMQTT from '../hooks/useMQTT';
 
 const BROKER = process.env.REACT_APP_MQTT_BROKER
-    || 'wss://e2792d91.ala.us-east-1.emqxsl.com:8084/mqtt';
+    || 'wss://e69691e1.ala.eu-central-1.emqxsl.com:8084/mqtt';
 
 const musicasDisponiveis = [
     { nome: 'Música 1', id: 1, emoji: '🎤', cor: 'from-[#f62681] to-[#be185d]'   },
