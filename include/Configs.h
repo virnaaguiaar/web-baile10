@@ -20,13 +20,13 @@ const char *host = "Carrinho";
 
 // ID único do robô - gravado na EEPROM
 #define ID_ROBO 0
-char id_robo[16] = "robo2"; // Alterar a medida que troca de robo
+char id_robo[16] = "robo3"; // Alterar a medida que troca de robo
 
 // Configurações MQTT
 WebSocketsClient webSocket;
 bool mqttConnected = false;
 // Configurações do servidor MQTT
-const char *mqtt_server = "bfea296c.ala.us-east-1.emqxsl.com";
+const char *mqtt_server = "f827c8d7.ala.us-east-1.emqxsl.com";
 const int mqtt_port = 8084;
 const char *mqtt_path = "/mqtt";
 const char *mqtt_user = "baile10d";

@@ -22,7 +22,7 @@ void setup() {
   Mp3Setup();
   SetupEncoders();
   carregarIdRobo();
-  salvarIdRobo("robo2"); 
+  salvarIdRobo("robo3"); 
   localization.setup();
   multiRobotCoord.setup();
 
